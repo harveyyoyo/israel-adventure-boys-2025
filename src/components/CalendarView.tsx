@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -253,7 +254,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     return (
                       <div
                         key={index}
-                        className={`min-h-[180px] p-2 border-r border-b last:border-r-0 ${
+                        className={`min-h-[180px] p-2 border-r border-b last:border-r-0 flex flex-col ${
                           day ? 'bg-white' : 'bg-gray-50'
                         } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
                           isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -269,8 +270,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                             
                             {isMultiDay && multiDayEvent && (
                               <div className="mb-2 flex items-center justify-between">
-                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1 flex items-center gap-1">
-                                  <span className="text-sm">{getEventEmoji(multiDayEvent.title, multiDayEvent.type)}</span>
+                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1">
                                   <span className="truncate">{multiDayEvent.title}</span>
                                 </div>
                                 <Button 
@@ -284,14 +284,13 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                               </div>
                             )}
                             
-                            <div className="space-y-1">
+                            <div className="space-y-1 flex-1">
                               {regularActivities.map(activity => (
                                 <div
                                   key={activity.id}
                                   className="text-xs p-1 rounded truncate flex items-center justify-between group"
                                 >
                                   <div className="flex items-center gap-1 flex-1 min-w-0">
-                                    <span className="text-sm flex-shrink-0">{getEventEmoji(activity.title, activity.type)}</span>
                                     <Badge 
                                       className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
                                     >
@@ -308,6 +307,18 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                     <Edit3 className="w-2 h-2" />
                                   </Button>
                                 </div>
+                              ))}
+                            </div>
+                            
+                            {/* Emoji icons at the bottom */}
+                            <div className="mt-auto pt-2 flex flex-wrap gap-1 justify-center">
+                              {isMultiDay && multiDayEvent && (
+                                <span className="text-lg">{getEventEmoji(multiDayEvent.title, multiDayEvent.type)}</span>
+                              )}
+                              {regularActivities.map(activity => (
+                                <span key={activity.id} className="text-lg">
+                                  {getEventEmoji(activity.title, activity.type)}
+                                </span>
                               ))}
                             </div>
                           </>
