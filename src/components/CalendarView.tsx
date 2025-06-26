@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +15,8 @@ import {
   Coffee, 
   Plane, 
   Palette,
-  Edit3
+  Edit3,
+  Download
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -189,6 +189,27 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     }
   };
 
+  const getPrimaryEmojiForDay = (year: number, month: number, day: number | null) => {
+    if (!day) return null;
+    
+    const activities = getActivitiesForDay(year, month, day);
+    if (activities.length === 0) return null;
+    
+    // Prioritize multi-day events first
+    const multiDayEvent = activities.find(activity => activity.isMultiDay);
+    if (multiDayEvent) {
+      return getEventEmoji(multiDayEvent.title, multiDayEvent.type);
+    }
+    
+    // Otherwise use the first regular activity
+    const regularActivity = activities.find(activity => !activity.isMultiDay);
+    if (regularActivity) {
+      return getEventEmoji(regularActivity.title, regularActivity.type);
+    }
+    
+    return null;
+  };
+
   const handleEditClick = (item: ItineraryItem) => {
     setEditingItem(item);
     setEditForm({
@@ -210,6 +231,10 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     setEditingItem(null);
   };
 
+  const generatePDF = () => {
+    window.print();
+  };
+
   // Only show July and August 2025
   const monthsToShow = [
     { year: 2025, month: 6 }, // July
@@ -221,6 +246,13 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-0">
+      <div className="flex justify-end mb-4 print:hidden">
+        <Button onClick={generatePDF} variant="outline" className="flex items-center gap-2">
+          <Download className="w-4 h-4" />
+          Download PDF
+        </Button>
+      </div>
+
       {monthsToShow.map(({ year, month }) => {
         const days = getDaysInMonth(year, month);
         
@@ -247,6 +279,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     const isToday = currentDay && currentDay.getTime() === today.getTime();
                     const isMultiDay = isPartOfMultiDayEvent(year, month, day);
                     const multiDayEvent = getMultiDayEventForDay(year, month, day);
+                    const primaryEmoji = getPrimaryEmojiForDay(year, month, day);
                     
                     // Filter out multi-day events from regular activities to avoid duplication
                     const regularActivities = activities.filter(activity => !activity.isMultiDay);
@@ -269,14 +302,14 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                             </div>
                             
                             {isMultiDay && multiDayEvent && (
-                              <div className="mb-2 flex items-center justify-between">
+                              <div className="mb-2 flex items-center justify-between print:pr-0">
                                 <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1">
                                   <span className="truncate">{multiDayEvent.title}</span>
                                 </div>
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
-                                  className="h-6 w-6 p-0"
+                                  className="h-6 w-6 p-0 print:hidden"
                                   onClick={() => handleEditClick(multiDayEvent)}
                                 >
                                   <Edit3 className="w-3 h-3" />
@@ -301,7 +334,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                   <Button 
                                     size="sm" 
                                     variant="ghost" 
-                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden"
                                     onClick={() => handleEditClick(activity)}
                                   >
                                     <Edit3 className="w-2 h-2" />
@@ -310,17 +343,12 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                               ))}
                             </div>
                             
-                            {/* Emoji icons at the bottom */}
-                            <div className="mt-auto pt-2 flex flex-wrap gap-1 justify-center">
-                              {isMultiDay && multiDayEvent && (
-                                <span className="text-lg">{getEventEmoji(multiDayEvent.title, multiDayEvent.type)}</span>
-                              )}
-                              {regularActivities.map(activity => (
-                                <span key={activity.id} className="text-lg">
-                                  {getEventEmoji(activity.title, activity.type)}
-                                </span>
-                              ))}
-                            </div>
+                            {/* Single large emoji at the bottom */}
+                            {primaryEmoji && (
+                              <div className="mt-auto pt-2 flex justify-center items-center flex-1 min-h-[40px]">
+                                <span className="text-4xl md:text-5xl lg:text-6xl">{primaryEmoji}</span>
+                              </div>
+                            )}
                           </>
                         )}
                       </div>
@@ -335,7 +363,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       
       {/* Edit Dialog */}
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent>
+        <DialogContent className="print:hidden">
           <DialogHeader>
             <DialogTitle>Edit Activity</DialogTitle>
           </DialogHeader>
