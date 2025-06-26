@@ -63,19 +63,34 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
-    if (eventTitle.toLowerCase().includes('tzfat')) {
+    if (eventTitle.toLowerCase().includes('tzfat') || eventTitle.toLowerCase().includes('tzfas')) {
       return 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200';
     }
     if (eventTitle.toLowerCase().includes('9 days')) {
       return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200';
     }
+    if (eventTitle.toLowerCase().includes('shabbos')) {
+      return 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200';
+    }
+    if (eventTitle.toLowerCase().includes('north overnight') || eventTitle.toLowerCase().includes('yurts')) {
+      return 'bg-gradient-to-r from-green-50 to-green-100 border-green-200';
+    }
+    if (eventTitle.toLowerCase().includes('old city')) {
+      return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200';
+    }
+    if (eventTitle.toLowerCase().includes('eilat')) {
+      return 'bg-gradient-to-r from-cyan-50 to-cyan-100 border-cyan-200';
+    }
+    if (eventTitle.toLowerCase().includes('off shabbos')) {
+      return 'bg-gradient-to-r from-pink-50 to-pink-100 border-pink-200';
+    }
     
     const colors = [
-      'bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200',
-      'bg-gradient-to-r from-green-50 to-emerald-100 border-green-200',
-      'bg-gradient-to-r from-orange-50 to-amber-100 border-orange-200',
-      'bg-gradient-to-r from-pink-50 to-rose-100 border-pink-200',
-      'bg-gradient-to-r from-teal-50 to-cyan-100 border-teal-200',
+      'bg-gradient-to-r from-indigo-50 to-indigo-100 border-indigo-200',
+      'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200',
+      'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200',
+      'bg-gradient-to-r from-rose-50 to-rose-100 border-rose-200',
+      'bg-gradient-to-r from-teal-50 to-teal-100 border-teal-200',
     ];
     
     const hash = eventTitle.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -100,6 +115,38 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return days;
   };
 
+  const parseMultiDayRange = (item: ItineraryItem) => {
+    if (!item.isMultiDay) return null;
+    
+    const dateText = item.date.toLowerCase();
+    const startDate = new Date(item.fullDate);
+    startDate.setHours(0, 0, 0, 0);
+    
+    let endDate = new Date(startDate);
+    
+    // Parse different multi-day patterns
+    if (dateText.includes('july 9') && dateText.includes('10')) {
+      endDate = new Date(2025, 6, 10); // July 10
+    } else if (dateText.includes('july 17') && dateText.includes('21')) {
+      endDate = new Date(2025, 6, 21); // July 21
+    } else if (dateText.includes('july 24') && dateText.includes('27')) {
+      endDate = new Date(2025, 6, 27); // July 27
+    } else if (dateText.includes('july 27') && dateText.includes('august 1')) {
+      endDate = new Date(2025, 7, 1); // August 1
+    } else if (dateText.includes('august 1') && dateText.includes('2')) {
+      endDate = new Date(2025, 7, 2); // August 2
+    } else if (dateText.includes('august 4') && dateText.includes('6')) {
+      endDate = new Date(2025, 7, 6); // August 6
+    } else if (dateText.includes('august 8') && dateText.includes('9')) {
+      endDate = new Date(2025, 7, 9); // August 9
+    } else if (dateText.includes('august 11') && dateText.includes('13')) {
+      endDate = new Date(2025, 7, 13); // August 13
+    }
+    
+    endDate.setHours(0, 0, 0, 0);
+    return { startDate, endDate };
+  };
+
   const getActivitiesForDay = (year: number, month: number, day: number | null) => {
     if (!day) return [];
     
@@ -117,33 +164,10 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       
       // For multi-day events, check if target date falls within the range
       if (item.isMultiDay) {
-        const startDate = new Date(item.fullDate);
-        startDate.setHours(0, 0, 0, 0);
-        
-        let endDate = new Date(startDate);
-        const dateText = item.date.toLowerCase();
-        
-        // Parse multi-day event end dates based on the date string
-        if (dateText.includes('july 9') && dateText.includes('10')) {
-          endDate = new Date(2025, 6, 10); // July 10
-        } else if (dateText.includes('july 17') && dateText.includes('21')) {
-          endDate = new Date(2025, 6, 21); // July 21
-        } else if (dateText.includes('july 24') && dateText.includes('27')) {
-          endDate = new Date(2025, 6, 27); // July 27
-        } else if (dateText.includes('july 27') && dateText.includes('august 1')) {
-          endDate = new Date(2025, 7, 1); // August 1
-        } else if (dateText.includes('august 1') && dateText.includes('2')) {
-          endDate = new Date(2025, 7, 2); // August 2
-        } else if (dateText.includes('august 4') && dateText.includes('6')) {
-          endDate = new Date(2025, 7, 6); // August 6
-        } else if (dateText.includes('august 8') && dateText.includes('9')) {
-          endDate = new Date(2025, 7, 9); // August 9
-        } else if (dateText.includes('august 11') && dateText.includes('13')) {
-          endDate = new Date(2025, 7, 13); // August 13
+        const range = parseMultiDayRange(item);
+        if (range) {
+          return targetDate >= range.startDate && targetDate <= range.endDate;
         }
-        
-        endDate.setHours(0, 0, 0, 0);
-        return targetDate >= startDate && targetDate <= endDate;
       }
       
       return false;
