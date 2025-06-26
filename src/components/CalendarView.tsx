@@ -115,38 +115,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return days;
   };
 
-  const parseMultiDayRange = (item: ItineraryItem) => {
-    if (!item.isMultiDay) return null;
-    
-    const dateText = item.date.toLowerCase();
-    const startDate = new Date(item.fullDate);
-    startDate.setHours(0, 0, 0, 0);
-    
-    let endDate = new Date(startDate);
-    
-    // Parse different multi-day patterns based on actual timeline data
-    if (dateText.includes('july 9') && dateText.includes('10')) {
-      endDate = new Date(2025, 6, 10); // July 10 - North Overnight
-    } else if (dateText.includes('july 17') && dateText.includes('21')) {
-      endDate = new Date(2025, 6, 21); // July 21 - Shabbos Migdal HaEmek
-    } else if (dateText.includes('july 24') && dateText.includes('27')) {
-      endDate = new Date(2025, 6, 27); // July 27 - Tzfat
-    } else if (dateText.includes('july 27') && dateText.includes('august 1')) {
-      endDate = new Date(2025, 7, 1); // August 1 - 9 days
-    } else if (dateText.includes('august 1') && dateText.includes('2')) {
-      endDate = new Date(2025, 7, 2); // August 2 - Old City Shabbos
-    } else if (dateText.includes('august 4') && dateText.includes('6')) {
-      endDate = new Date(2025, 7, 6); // August 6 - North Overnight - Sleep on the Beach
-    } else if (dateText.includes('august 8') && dateText.includes('9')) {
-      endDate = new Date(2025, 7, 9); // August 9 - Off Shabbos
-    } else if (dateText.includes('august 11') && dateText.includes('13')) {
-      endDate = new Date(2025, 7, 13); // August 13 - Eilat
-    }
-    
-    endDate.setHours(0, 0, 0, 0);
-    return { startDate, endDate };
-  };
-
   const getActivitiesForDay = (year: number, month: number, day: number | null) => {
     if (!day) return [];
     
@@ -163,11 +131,10 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       }
       
       // For multi-day events, check if target date falls within the range
-      if (item.isMultiDay) {
-        const range = parseMultiDayRange(item);
-        if (range) {
-          return targetDate >= range.startDate && targetDate <= range.endDate;
-        }
+      if (item.isMultiDay && item.endDate) {
+        const endDate = new Date(item.endDate);
+        endDate.setHours(0, 0, 0, 0);
+        return targetDate >= itemDate && targetDate <= endDate;
       }
       
       return false;
