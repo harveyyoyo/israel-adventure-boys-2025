@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -6,27 +7,38 @@ import { ItineraryCard } from "@/components/ItineraryCard";
 import { FilterTabs } from "@/components/FilterTabs";
 import { CalendarView } from "@/components/CalendarView";
 import { ViewToggle } from "@/components/ViewToggle";
-import { itineraryData } from "@/data/itineraryData";
+import { itineraryData, ItineraryItem } from "@/data/itineraryData";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [view, setView] = useState<'timeline' | 'calendar'>('calendar');
+  const [items, setItems] = useState<ItineraryItem[]>(itineraryData);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const handleUpdateItem = (id: string, updates: Partial<ItineraryItem>) => {
+    setItems(prevItems => 
+      prevItems.map(item => 
+        item.id === id 
+          ? { ...item, ...updates }
+          : item
+      )
+    );
+  };
+
   const filteredItems = useMemo(() => {
-    return itineraryData.filter(item => {
+    return items.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
       return matchesSearch && matchesFilter;
     });
-  }, [searchTerm, activeFilter]);
+  }, [searchTerm, activeFilter, items]);
 
   const activityCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      all: itineraryData.length,
+      all: items.length,
       spiritual: 0,
       adventure: 0,
       educational: 0,
@@ -35,12 +47,12 @@ const Index = () => {
       cultural: 0
     };
 
-    itineraryData.forEach(item => {
+    items.forEach(item => {
       counts[item.type]++;
     });
 
     return counts;
-  }, []);
+  }, [items]);
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, typeof filteredItems> = {};
@@ -96,22 +108,22 @@ const Index = () => {
           {/* Results Count */}
           <div className="text-center mb-8">
             <p className="text-gray-600">
-              Showing {filteredItems.length} of {itineraryData.length} activities
+              Showing {filteredItems.length} of {items.length} activities
             </p>
           </div>
 
           {/* Calendar or Timeline View */}
           {view === 'calendar' ? (
-            <CalendarView items={filteredItems} />
+            <CalendarView items={filteredItems} onUpdateItem={handleUpdateItem} />
           ) : (
             <div className="space-y-12">
-              {Object.entries(groupedItems).map(([monthYear, items]) => (
+              {Object.entries(groupedItems).map(([monthYear, monthItems]) => (
                 <div key={monthYear}>
                   <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
                     {monthYear}
                   </h2>
                   <div className="grid gap-4 md:gap-6">
-                    {items.map(item => {
+                    {monthItems.map(item => {
                       const itemDate = new Date(item.fullDate);
                       itemDate.setHours(0, 0, 0, 0);
                       
@@ -124,6 +136,7 @@ const Index = () => {
                           item={item}
                           isPast={isPast}
                           isToday={isToday}
+                          onUpdateItem={handleUpdateItem}
                         />
                       );
                     })}

@@ -3,6 +3,11 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
   Heart, 
@@ -10,14 +15,23 @@ import {
   GraduationCap, 
   Coffee, 
   Plane, 
-  Palette 
+  Palette,
+  Edit3
 } from 'lucide-react';
 
 interface CalendarViewProps {
   items: ItineraryItem[];
+  onUpdateItem: (id: string, updates: Partial<ItineraryItem>) => void;
 }
 
-export const CalendarView = ({ items }: CalendarViewProps) => {
+export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
+  const [editingItem, setEditingItem] = useState<ItineraryItem | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    date: '',
+    type: '' as ItineraryItem['type']
+  });
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -58,9 +72,46 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
       'bg-gradient-to-r from-teal-50 to-cyan-100',
     ];
     
-    // Create a simple hash from the event ID to consistently assign colors
     const hash = eventId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
+  };
+
+  const parseMultiDayRange = (dateString: string, startDate: Date) => {
+    const dateText = dateString.toLowerCase();
+    let endDate = new Date(startDate);
+    
+    // Handle specific multi-day ranges with better parsing
+    if (dateText.includes('july') && dateText.includes('august')) {
+      if (dateText.includes('august 1')) endDate = new Date(2025, 7, 1);
+      else if (dateText.includes('august 2')) endDate = new Date(2025, 7, 2);
+      else if (dateText.includes('august 6')) endDate = new Date(2025, 7, 6);
+      else if (dateText.includes('august 9')) endDate = new Date(2025, 7, 9);
+      else if (dateText.includes('august 13')) endDate = new Date(2025, 7, 13);
+      else if (dateText.includes('august 18')) endDate = new Date(2025, 7, 18);
+    } else if (dateText.includes('-')) {
+      const parts = dateText.split('-');
+      if (parts.length >= 2) {
+        const endPart = parts[1].trim();
+        const endDayMatch = endPart.match(/\d+/);
+        if (endDayMatch) {
+          const endDay = parseInt(endDayMatch[0]);
+          if (endDay > 0) {
+            endDate = new Date(startDate.getFullYear(), startDate.getMonth(), endDay);
+          }
+        }
+      }
+    }
+    
+    // Special cases for known multi-day events
+    if (dateText.includes('eilat')) {
+      // Eilat is August 11-13 (3 days)
+      endDate = new Date(2025, 7, 13);
+    } else if (dateText.includes('north overnight') && dateText.includes('august 4')) {
+      // North Overnight is August 4-6 (3 days)
+      endDate = new Date(2025, 7, 6);
+    }
+    
+    return endDate;
   };
 
   const getDaysInMonth = (year: number, month: number) => {
@@ -70,12 +121,10 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
     
     const days = [];
     
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
     
-    // Add all days of the month
     for (let day = 1; day <= lastDay.getDate(); day++) {
       days.push(day);
     }
@@ -108,29 +157,7 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
       const itemStartDate = new Date(item.fullDate);
       itemStartDate.setHours(0, 0, 0, 0);
       
-      // Parse the date range from the date string for multi-day events
-      const dateText = item.date.toLowerCase();
-      let endDate = new Date(itemStartDate);
-      
-      if (dateText.includes('july') && dateText.includes('august')) {
-        // Cross-month event
-        if (dateText.includes('august 1')) endDate = new Date(2025, 7, 1);
-        else if (dateText.includes('august 2')) endDate = new Date(2025, 7, 2);
-        else if (dateText.includes('august 6')) endDate = new Date(2025, 7, 6);
-        else if (dateText.includes('august 9')) endDate = new Date(2025, 7, 9);
-        else if (dateText.includes('august 13')) endDate = new Date(2025, 7, 13);
-      } else if (dateText.includes('-')) {
-        // Same month range
-        const parts = dateText.split('-');
-        if (parts.length >= 2) {
-          const endPart = parts[1].trim();
-          const endDay = parseInt(endPart.match(/\d+/)?.[0] || '0');
-          if (endDay > 0) {
-            endDate = new Date(itemStartDate.getFullYear(), itemStartDate.getMonth(), endDay);
-          }
-        }
-      }
-      
+      const endDate = parseMultiDayRange(item.date, itemStartDate);
       endDate.setHours(0, 0, 0, 0);
       
       return targetDate >= itemStartDate && targetDate <= endDate;
@@ -149,33 +176,32 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
       const itemStartDate = new Date(item.fullDate);
       itemStartDate.setHours(0, 0, 0, 0);
       
-      // Parse the date range from the date string for multi-day events
-      const dateText = item.date.toLowerCase();
-      let endDate = new Date(itemStartDate);
-      
-      if (dateText.includes('july') && dateText.includes('august')) {
-        // Cross-month event
-        if (dateText.includes('august 1')) endDate = new Date(2025, 7, 1);
-        else if (dateText.includes('august 2')) endDate = new Date(2025, 7, 2);
-        else if (dateText.includes('august 6')) endDate = new Date(2025, 7, 6);
-        else if (dateText.includes('august 9')) endDate = new Date(2025, 7, 9);
-        else if (dateText.includes('august 13')) endDate = new Date(2025, 7, 13);
-      } else if (dateText.includes('-')) {
-        // Same month range
-        const parts = dateText.split('-');
-        if (parts.length >= 2) {
-          const endPart = parts[1].trim();
-          const endDay = parseInt(endPart.match(/\d+/)?.[0] || '0');
-          if (endDay > 0) {
-            endDate = new Date(itemStartDate.getFullYear(), itemStartDate.getMonth(), endDay);
-          }
-        }
-      }
-      
+      const endDate = parseMultiDayRange(item.date, itemStartDate);
       endDate.setHours(0, 0, 0, 0);
       
       return targetDate >= itemStartDate && targetDate <= endDate;
     }) || null;
+  };
+
+  const handleEditClick = (item: ItineraryItem) => {
+    setEditingItem(item);
+    setEditForm({
+      title: item.title,
+      date: item.date,
+      type: item.type
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingItem) return;
+    
+    const updatedItem = {
+      ...editForm,
+      fullDate: new Date(editForm.date)
+    };
+    
+    onUpdateItem(editingItem.id, updatedItem);
+    setEditingItem(null);
   };
 
   // Generate months to show (July 2025 to December 2025)
@@ -198,15 +224,12 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
         
         return (
           <div key={`${year}-${month}`}>
-            {/* Month Header */}
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
               {monthNames[month]} {year}
             </h2>
 
-            {/* Calendar Grid */}
             <Card className="overflow-hidden">
               <CardContent className="p-0">
-                {/* Days of week header */}
                 <div className="grid grid-cols-7 bg-gray-50 border-b">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                     <div key={day} className="p-3 text-center font-semibold text-gray-600 border-r last:border-r-0">
@@ -215,7 +238,6 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                   ))}
                 </div>
 
-                {/* Calendar days */}
                 <div className="grid grid-cols-7">
                   {days.map((day, index) => {
                     const activities = getActivitiesForDay(year, month, day);
@@ -241,12 +263,19 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                               {day}
                             </div>
                             
-                            {/* Multi-day event indicator */}
                             {isMultiDay && multiDayEvent && (
-                              <div className="mb-2">
-                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate">
+                              <div className="mb-2 flex items-center justify-between">
+                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1">
                                   {multiDayEvent.title}
                                 </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => handleEditClick(multiDayEvent)}
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                </Button>
                               </div>
                             )}
                             
@@ -254,15 +283,22 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                               {activities.slice(0, isMultiDay ? 2 : 3).map(activity => (
                                 <div
                                   key={activity.id}
-                                  className="text-xs p-1 rounded truncate"
-                                  title={activity.title}
+                                  className="text-xs p-1 rounded truncate flex items-center justify-between group"
                                 >
                                   <Badge 
-                                    className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 w-full justify-start gap-1`}
+                                    className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1`}
                                   >
                                     {getTypeIcon(activity.type)}
                                     {activity.title}
                                   </Badge>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100"
+                                    onClick={() => handleEditClick(activity)}
+                                  >
+                                    <Edit3 className="w-2 h-2" />
+                                  </Button>
                                 </div>
                               ))}
                               {activities.length > (isMultiDay ? 2 : 3) && (
@@ -277,9 +313,19 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                                       <h4 className="font-semibold text-sm">Additional Activities</h4>
                                       <div className="space-y-1">
                                         {activities.slice(isMultiDay ? 2 : 3).map(activity => (
-                                          <div key={activity.id} className="flex items-center gap-2">
-                                            {getTypeIcon(activity.type)}
-                                            <span className="text-sm">{activity.title}</span>
+                                          <div key={activity.id} className="flex items-center gap-2 justify-between group">
+                                            <div className="flex items-center gap-2">
+                                              {getTypeIcon(activity.type)}
+                                              <span className="text-sm">{activity.title}</span>
+                                            </div>
+                                            <Button 
+                                              size="sm" 
+                                              variant="ghost" 
+                                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100"
+                                              onClick={() => handleEditClick(activity)}
+                                            >
+                                              <Edit3 className="w-2 h-2" />
+                                            </Button>
                                           </div>
                                         ))}
                                       </div>
@@ -299,6 +345,57 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
           </div>
         );
       })}
+      
+      {/* Edit Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Activity</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                value={editForm.date}
+                onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select value={editForm.type} onValueChange={(value: ItineraryItem['type']) => setEditForm({ ...editForm, type: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spiritual">Spiritual</SelectItem>
+                  <SelectItem value="adventure">Adventure</SelectItem>
+                  <SelectItem value="educational">Educational</SelectItem>
+                  <SelectItem value="leisure">Leisure</SelectItem>
+                  <SelectItem value="travel">Travel</SelectItem>
+                  <SelectItem value="cultural">Cultural</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingItem(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
