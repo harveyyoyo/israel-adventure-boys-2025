@@ -1,12 +1,10 @@
 
 import { useState, useMemo } from 'react';
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { ItineraryHeader } from "@/components/ItineraryHeader";
 import { ItineraryCard } from "@/components/ItineraryCard";
-import { FilterTabs } from "@/components/FilterTabs";
 import { CalendarView } from "@/components/CalendarView";
-import { ViewToggle } from "@/components/ViewToggle";
+import { AppSidebar } from "@/components/AppSidebar";
 import { itineraryData, ItineraryItem } from "@/data/itineraryData";
 
 const Index = () => {
@@ -78,88 +76,88 @@ const Index = () => {
   }, [filteredItems]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <ItineraryHeader />
-        
-        <div className="max-w-7xl mx-auto">
-          {/* Search Bar */}
-          <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              type="text"
-              placeholder="Search activities..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 py-3 text-lg bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:border-blue-400 rounded-xl"
-            />
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-orange-50 via-white to-blue-50">
+        <AppSidebar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          activityCounts={activityCounts}
+          view={view}
+          onViewChange={setView}
+          itemsCount={filteredItems.length}
+          totalCount={items.length}
+        />
 
-          {/* Filter Tabs */}
-          <FilterTabs 
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            activityCounts={activityCounts}
-          />
+        <SidebarInset className="flex-1">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white/80 backdrop-blur-sm px-4">
+            <SidebarTrigger className="ml-0" />
+            <div className="flex-1 text-center">
+              <h1 className="text-lg font-semibold text-gray-800 md:hidden">
+                Israel Adventure Boys 2025
+              </h1>
+            </div>
+          </header>
 
-          {/* View Toggle */}
-          <ViewToggle view={view} onViewChange={setView} />
+          <main className="flex-1 overflow-auto">
+            <div className="container mx-auto px-4 py-8">
+              <div className="hidden md:block">
+                <ItineraryHeader />
+              </div>
+              
+              <div className="max-w-7xl mx-auto">
+                {/* Calendar or Timeline View */}
+                {view === 'calendar' ? (
+                  <CalendarView items={filteredItems} onUpdateItem={handleUpdateItem} />
+                ) : (
+                  <div className="space-y-8 md:space-y-12">
+                    {Object.entries(groupedItems).map(([monthYear, monthItems]) => (
+                      <div key={monthYear}>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">
+                          {monthYear}
+                        </h2>
+                        <div className="grid gap-3 md:gap-6">
+                          {monthItems.map(item => {
+                            const itemDate = new Date(item.fullDate);
+                            itemDate.setHours(0, 0, 0, 0);
+                            
+                            const isPast = itemDate < today;
+                            const isToday = itemDate.getTime() === today.getTime();
 
-          {/* Results Count */}
-          <div className="text-center mb-8">
-            <p className="text-gray-600">
-              Showing {filteredItems.length} of {items.length} activities
-            </p>
-          </div>
-
-          {/* Calendar or Timeline View */}
-          {view === 'calendar' ? (
-            <CalendarView items={filteredItems} onUpdateItem={handleUpdateItem} />
-          ) : (
-            <div className="space-y-12">
-              {Object.entries(groupedItems).map(([monthYear, monthItems]) => (
-                <div key={monthYear}>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                    {monthYear}
-                  </h2>
-                  <div className="grid gap-4 md:gap-6">
-                    {monthItems.map(item => {
-                      const itemDate = new Date(item.fullDate);
-                      itemDate.setHours(0, 0, 0, 0);
-                      
-                      const isPast = itemDate < today;
-                      const isToday = itemDate.getTime() === today.getTime();
-
-                      return (
-                        <ItineraryCard
-                          key={item.id}
-                          item={item}
-                          isPast={isPast}
-                          isToday={isToday}
-                          onUpdateItem={handleUpdateItem}
-                        />
-                      );
-                    })}
+                            return (
+                              <ItineraryCard
+                                key={item.id}
+                                item={item}
+                                isPast={isPast}
+                                isToday={isToday}
+                                onUpdateItem={handleUpdateItem}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
 
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                No activities found
-              </h3>
-              <p className="text-gray-500">
-                Try adjusting your search or filter criteria
-              </p>
+                {filteredItems.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-4xl md:text-6xl mb-4">🔍</div>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-600 mb-2">
+                      No activities found
+                    </h3>
+                    <p className="text-sm md:text-base text-gray-500">
+                      Try adjusting your search or filter criteria
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
