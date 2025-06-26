@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -122,22 +121,19 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     targetDate.setHours(0, 0, 0, 0);
     
     return items.filter(item => {
-      const itemDate = new Date(item.fullDate);
-      itemDate.setHours(0, 0, 0, 0);
+      const itemStartDate = new Date(item.fullDate);
+      itemStartDate.setHours(0, 0, 0, 0);
       
-      // Check if the target date matches the item's date exactly
-      if (itemDate.getTime() === targetDate.getTime()) {
-        return true;
+      // For single-day events, check exact date match
+      if (!item.isMultiDay || !item.endDate) {
+        return itemStartDate.getTime() === targetDate.getTime();
       }
       
-      // For multi-day events, check if target date falls within the range
-      if (item.isMultiDay && item.endDate) {
-        const endDate = new Date(item.endDate);
-        endDate.setHours(0, 0, 0, 0);
-        return targetDate >= itemDate && targetDate <= endDate;
-      }
+      // For multi-day events, check if target date falls within the inclusive range
+      const itemEndDate = new Date(item.endDate);
+      itemEndDate.setHours(0, 0, 0, 0);
       
-      return false;
+      return targetDate >= itemStartDate && targetDate <= itemEndDate;
     });
   };
 
