@@ -216,7 +216,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     return (
                       <div
                         key={index}
-                        className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
+                        className={`min-h-[160px] p-2 border-r border-b last:border-r-0 ${
                           day ? 'bg-white' : 'bg-gray-50'
                         } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
                           isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -247,7 +247,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                             )}
                             
                             <div className="space-y-1">
-                              {regularActivities.slice(0, isMultiDay ? 2 : 3).map(activity => (
+                              {regularActivities.map(activity => (
                                 <div
                                   key={activity.id}
                                   className="text-xs p-1 rounded truncate flex items-center justify-between group"
@@ -268,38 +268,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                   </Button>
                                 </div>
                               ))}
-                              {regularActivities.length > (isMultiDay ? 2 : 3) && (
-                                <HoverCard>
-                                  <HoverCardTrigger asChild>
-                                    <div className="text-xs text-gray-500 px-1 cursor-pointer hover:text-gray-700">
-                                      +{regularActivities.length - (isMultiDay ? 2 : 3)} more
-                                    </div>
-                                  </HoverCardTrigger>
-                                  <HoverCardContent className="w-80">
-                                    <div className="space-y-2">
-                                      <h4 className="font-semibold text-sm">Additional Activities</h4>
-                                      <div className="space-y-1">
-                                        {regularActivities.slice(isMultiDay ? 2 : 3).map(activity => (
-                                          <div key={activity.id} className="flex items-center gap-2 justify-between group">
-                                            <div className="flex items-center gap-2">
-                                              {getTypeIcon(activity.type)}
-                                              <span className="text-sm">{activity.title}</span>
-                                            </div>
-                                            <Button 
-                                              size="sm" 
-                                              variant="ghost" 
-                                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100"
-                                              onClick={() => handleEditClick(activity)}
-                                            >
-                                              <Edit3 className="w-2 h-2" />
-                                            </Button>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </HoverCardContent>
-                                </HoverCard>
-                              )}
                             </div>
                           </>
                         )}
