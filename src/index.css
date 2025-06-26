@@ -110,7 +110,7 @@
     border-width: 0.5px !important;
   }
   
-  /* Maintain background colors in print */
+  /* Maintain background colors in print with enhanced colors */
   .bg-purple-100 { background-color: #f3e8ff !important; }
   .bg-red-100 { background-color: #fee2e2 !important; }
   .bg-blue-100 { background-color: #dbeafe !important; }
@@ -120,6 +120,31 @@
   .bg-pink-100 { background-color: #fce7f3 !important; }
   .bg-gray-100 { background-color: #f3f4f6 !important; }
   .bg-white { background-color: white !important; }
+  .bg-blue-50 { background-color: #eff6ff !important; }
+  
+  /* Enhanced color backgrounds for activity types */
+  .bg-purple-200 { background-color: #e9d5ff !important; }
+  .bg-green-200 { background-color: #bbf7d0 !important; }
+  .bg-blue-200 { background-color: #bfdbfe !important; }
+  .bg-orange-200 { background-color: #fed7aa !important; }
+  .bg-indigo-200 { background-color: #c7d2fe !important; }
+  .bg-pink-200 { background-color: #fbcfe8 !important; }
+  .bg-gray-200 { background-color: #e5e7eb !important; }
+  
+  /* Text colors for print */
+  .text-purple-800 { color: #6b21a8 !important; }
+  .text-green-800 { color: #166534 !important; }
+  .text-blue-800 { color: #1e40af !important; }
+  .text-orange-800 { color: #9a3412 !important; }
+  .text-indigo-800 { color: #3730a3 !important; }
+  .text-pink-800 { color: #9d174d !important; }
+  .text-gray-800 { color: #1f2937 !important; }
+  .text-blue-700 { color: #1d4ed8 !important; }
+  .text-indigo-600 { color: #4f46e5 !important; }
+  
+  /* Header gradient colors for print */
+  .from-indigo-500 { background: #6366f1 !important; }
+  .to-purple-600 { background: linear-gradient(to right, #6366f1, #9333ea) !important; }
   
   /* Ultra-compact text sizing for print */
   h1 { 
@@ -151,6 +176,7 @@
   .text-\[6px\] { font-size: 3px !important; }
   .text-\[5px\] { font-size: 3px !important; }
   .text-\[4px\] { font-size: 2px !important; }
+  .text-\[3px\] { font-size: 2px !important; }
   .text-sm { font-size: 4px !important; }
   
   /* Icon sizing for print - even smaller */
@@ -162,11 +188,7 @@
   .space-y-0\.5 > * + * { margin-top: 0.5px !important; }
   
   /* Ensure content fits within cells */
-  .truncate {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
+  .leading-tight { line-height: 1.1 !important; }
   
   /* Force consistent grid layout */
   .overflow-hidden {

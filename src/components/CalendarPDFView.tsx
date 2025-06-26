@@ -28,6 +28,18 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return <IconComponent className="w-1 h-1" />;
   };
 
+  const getTypeColor = (type: string) => {
+    const colors = {
+      spiritual: 'bg-purple-200 text-purple-800',
+      adventure: 'bg-green-200 text-green-800',
+      educational: 'bg-blue-200 text-blue-800',
+      leisure: 'bg-orange-200 text-orange-800',
+      travel: 'bg-indigo-200 text-indigo-800',
+      cultural: 'bg-pink-200 text-pink-800'
+    };
+    return colors[type as keyof typeof colors] || 'bg-gray-200 text-gray-800';
+  };
+
   const getMultiDayBackgroundColor = (eventTitle: string) => {
     if (eventTitle.toLowerCase().includes('tzfat') || eventTitle.toLowerCase().includes('tzfas')) {
       return 'bg-purple-100 border-purple-300';
@@ -155,17 +167,21 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   const calendarDays = generateCalendarDays();
 
   return (
-    <div className="w-full min-h-screen bg-white p-2">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-2">
       <div className="text-center mb-2">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">Camp Sdei Chemed - Boys 2025</h1>
-        <p className="text-xs text-gray-600">Summer Itinerary Calendar - July & August</p>
+        <h1 className="text-xl font-bold text-indigo-800 mb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Camp Sdei Chemed - Boys 2025
+        </h1>
+        <p className="text-xs text-indigo-600 font-medium">Summer Itinerary Calendar - July & August</p>
       </div>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden shadow-lg border-2 border-indigo-200">
         <CardContent className="p-0">
-          <div className="grid grid-cols-7 bg-gray-100 border-b border-gray-300">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-1 text-center text-[8px] font-bold text-gray-700 border-r border-gray-300 last:border-r-0">
+          <div className="grid grid-cols-7 bg-gradient-to-r from-indigo-500 to-purple-600 border-b border-indigo-300">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+              <div key={day} className={`p-1 text-center text-[8px] font-bold text-white border-r border-indigo-300 last:border-r-0 ${
+                index === 5 ? 'bg-blue-600' : index === 6 ? 'bg-purple-600' : ''
+              }`}>
                 {day}
               </div>
             ))}
@@ -179,31 +195,35 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
               const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
               
               const regularActivities = activities.filter(activity => !activity.isMultiDay);
+              const dayOfWeek = day ? day.getDay() : 0;
+              const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               
               return (
                 <div
                   key={index}
-                  className={`h-16 p-0.5 border-r border-b border-gray-300 last:border-r-0 flex flex-col text-[5px] ${
-                    day ? 'bg-white' : 'bg-gray-50'
+                  className={`h-16 p-0.5 border-r border-b border-gray-300 last:border-r-0 flex flex-col text-[3px] ${
+                    day ? (isWeekend ? 'bg-blue-50' : 'bg-white') : 'bg-gray-50'
                   } ${
                     isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
                   }`}
                 >
                   {day && (
                     <>
-                      <div className="text-[7px] font-bold mb-0.5 text-gray-800">
+                      <div className={`text-[7px] font-bold mb-0.5 ${
+                        isWeekend ? 'text-blue-700' : 'text-gray-800'
+                      }`}>
                         {day.getDate()}
                         {day.getDate() === 8 && day.getMonth() === 6 && (
-                          <span className="ml-1 text-[5px] text-gray-600">Jul</span>
+                          <span className="ml-1 text-[5px] text-indigo-600 font-bold">Jul</span>
                         )}
                         {day.getDate() === 1 && day.getMonth() === 7 && (
-                          <span className="ml-1 text-[5px] text-gray-600">Aug</span>
+                          <span className="ml-1 text-[5px] text-indigo-600 font-bold">Aug</span>
                         )}
                       </div>
                       
                       {isMultiDay && multiDayEvent && (
                         <div className="mb-0.5">
-                          <div className="text-[5px] font-semibold text-gray-800 px-0.5 py-0.5 bg-white/50 rounded leading-tight">
+                          <div className="text-[4px] font-semibold text-gray-800 px-0.5 py-0.5 bg-white/70 rounded leading-tight border border-gray-300">
                             {multiDayEvent.title}
                           </div>
                         </div>
@@ -213,10 +233,10 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         {regularActivities.map(activity => (
                           <div
                             key={activity.id}
-                            className="text-[4px] p-0.5 bg-gray-100 rounded flex items-center gap-0.5 leading-tight"
+                            className={`text-[3px] p-0.5 rounded flex items-center gap-0.5 leading-tight font-medium ${getTypeColor(activity.type)}`}
                           >
                             {getTypeIcon(activity.type)}
-                            <span className="font-medium">
+                            <span className="font-semibold">
                               {activity.title}
                             </span>
                           </div>
