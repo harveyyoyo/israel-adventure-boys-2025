@@ -6,12 +6,25 @@ export const ItineraryHeader = () => {
   return (
     <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 text-white p-8 rounded-xl mb-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-4 text-center">
-          Israel Summer Adventure 2025
-        </h1>
-        <p className="text-xl text-center mb-6 opacity-90">
-          An unforgettable journey through the Holy Land
-        </p>
+        <div className="flex items-center justify-center mb-6">
+          <img 
+            src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
+            alt="Camp Sdei Chemed Logo" 
+            className="h-24 w-auto"
+          />
+        </div>
+        
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold mb-2">
+            CAMP SDEI CHEMED INTERNATIONAL
+          </h1>
+          <h2 className="text-2xl font-semibold mb-2">
+            SUMMER 2025 ITINERARY
+          </h2>
+          <p className="text-xl font-medium opacity-90">
+            "OFF THE BEATEN PATH"
+          </p>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-white/10 border-white/20">
