@@ -118,22 +118,27 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     if (!day) return [];
     
     const targetDate = new Date(year, month, day);
-    targetDate.setHours(0, 0, 0, 0);
     
     return items.filter(item => {
       const itemStartDate = new Date(item.fullDate);
-      itemStartDate.setHours(0, 0, 0, 0);
       
       // For single-day events, check exact date match
       if (!item.isMultiDay || !item.endDate) {
-        return itemStartDate.getTime() === targetDate.getTime();
+        return (
+          itemStartDate.getFullYear() === targetDate.getFullYear() &&
+          itemStartDate.getMonth() === targetDate.getMonth() &&
+          itemStartDate.getDate() === targetDate.getDate()
+        );
       }
       
       // For multi-day events, check if target date falls within the inclusive range
       const itemEndDate = new Date(item.endDate);
-      itemEndDate.setHours(0, 0, 0, 0);
       
-      return targetDate >= itemStartDate && targetDate <= itemEndDate;
+      // Check if target date is between start and end dates (inclusive)
+      return (
+        targetDate >= itemStartDate && 
+        targetDate <= itemEndDate
+      );
     });
   };
 
