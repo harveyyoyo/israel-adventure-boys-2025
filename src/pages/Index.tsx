@@ -5,11 +5,14 @@ import { Search } from "lucide-react";
 import { ItineraryHeader } from "@/components/ItineraryHeader";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { FilterTabs } from "@/components/FilterTabs";
+import { CalendarView } from "@/components/CalendarView";
+import { ViewToggle } from "@/components/ViewToggle";
 import { itineraryData } from "@/data/itineraryData";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [view, setView] = useState<'timeline' | 'calendar'>('timeline');
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -68,7 +71,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <ItineraryHeader />
         
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Search Bar */}
           <div className="relative mb-8">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -88,6 +91,9 @@ const Index = () => {
             activityCounts={activityCounts}
           />
 
+          {/* View Toggle */}
+          <ViewToggle view={view} onViewChange={setView} />
+
           {/* Results Count */}
           <div className="text-center mb-8">
             <p className="text-gray-600">
@@ -95,34 +101,38 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Itinerary Timeline */}
-          <div className="space-y-12">
-            {Object.entries(groupedItems).map(([monthYear, items]) => (
-              <div key={monthYear}>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                  {monthYear}
-                </h2>
-                <div className="grid gap-4 md:gap-6">
-                  {items.map(item => {
-                    const itemDate = new Date(item.fullDate);
-                    itemDate.setHours(0, 0, 0, 0);
-                    
-                    const isPast = itemDate < today;
-                    const isToday = itemDate.getTime() === today.getTime();
+          {/* Calendar or Timeline View */}
+          {view === 'calendar' ? (
+            <CalendarView items={filteredItems} />
+          ) : (
+            <div className="space-y-12">
+              {Object.entries(groupedItems).map(([monthYear, items]) => (
+                <div key={monthYear}>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    {monthYear}
+                  </h2>
+                  <div className="grid gap-4 md:gap-6">
+                    {items.map(item => {
+                      const itemDate = new Date(item.fullDate);
+                      itemDate.setHours(0, 0, 0, 0);
+                      
+                      const isPast = itemDate < today;
+                      const isToday = itemDate.getTime() === today.getTime();
 
-                    return (
-                      <ItineraryCard
-                        key={item.id}
-                        item={item}
-                        isPast={isPast}
-                        isToday={isToday}
-                      />
-                    );
-                  })}
+                      return (
+                        <ItineraryCard
+                          key={item.id}
+                          item={item}
+                          isPast={isPast}
+                          isToday={isToday}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {filteredItems.length === 0 && (
             <div className="text-center py-12">
