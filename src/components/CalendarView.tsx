@@ -62,97 +62,26 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return <IconComponent className="w-3 h-3" />;
   };
 
-  const getMultiDayBackgroundColor = (eventId: string) => {
+  const getMultiDayBackgroundColor = (eventTitle: string) => {
+    // Special colors for specific events
+    if (eventTitle.toLowerCase().includes('tzfat')) {
+      return 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200';
+    }
+    if (eventTitle.toLowerCase().includes('9 days')) {
+      return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200';
+    }
+    
+    // Default colors for other multi-day events
     const colors = [
-      'bg-gradient-to-r from-blue-50 to-indigo-100',
-      'bg-gradient-to-r from-green-50 to-emerald-100',
-      'bg-gradient-to-r from-purple-50 to-violet-100',
-      'bg-gradient-to-r from-orange-50 to-amber-100',
-      'bg-gradient-to-r from-pink-50 to-rose-100',
-      'bg-gradient-to-r from-teal-50 to-cyan-100',
+      'bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200',
+      'bg-gradient-to-r from-green-50 to-emerald-100 border-green-200',
+      'bg-gradient-to-r from-orange-50 to-amber-100 border-orange-200',
+      'bg-gradient-to-r from-pink-50 to-rose-100 border-pink-200',
+      'bg-gradient-to-r from-teal-50 to-cyan-100 border-teal-200',
     ];
     
-    const hash = eventId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = eventTitle.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
-  };
-
-  const parseDate = (dateString: string) => {
-    // Handle various date formats from the itinerary data
-    const dateText = dateString.toLowerCase();
-    
-    // Extract month and day patterns
-    const monthMap: { [key: string]: number } = {
-      'january': 0, 'february': 1, 'march': 2, 'april': 3, 'may': 4, 'june': 5,
-      'july': 6, 'august': 7, 'september': 8, 'october': 9, 'november': 10, 'december': 11
-    };
-    
-    // Find month in the string
-    let month = -1;
-    let day = 1;
-    const year = 2025;
-    
-    for (const [monthName, monthIndex] of Object.entries(monthMap)) {
-      if (dateText.includes(monthName)) {
-        month = monthIndex;
-        break;
-      }
-    }
-    
-    // Extract day number
-    const dayMatch = dateText.match(/\b(\d{1,2})\b/);
-    if (dayMatch) {
-      day = parseInt(dayMatch[1]);
-    }
-    
-    // Handle special cases
-    if (month === -1) {
-      // If no month found, try to use the fullDate
-      return null;
-    }
-    
-    return new Date(year, month, day);
-  };
-
-  const parseMultiDayRange = (dateString: string, startDate: Date) => {
-    const dateText = dateString.toLowerCase();
-    let endDate = new Date(startDate);
-    
-    // Handle range patterns like "July 9-10" or "August 11-13"
-    const rangeMatch = dateText.match(/(\w+)\s+(\d+)-(\d+)/);
-    if (rangeMatch) {
-      const endDay = parseInt(rangeMatch[3]);
-      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), endDay);
-      return endDate;
-    }
-    
-    // Handle cross-month ranges like "July 27 - August 1"
-    if (dateText.includes('july') && dateText.includes('august')) {
-      const augustMatch = dateText.match(/august\s+(\d+)/);
-      if (augustMatch) {
-        const augustDay = parseInt(augustMatch[1]);
-        endDate = new Date(2025, 7, augustDay); // August is month 7
-        return endDate;
-      }
-    }
-    
-    // Handle specific known multi-day events
-    if (dateText.includes('eilat')) {
-      endDate = new Date(2025, 7, 13); // August 13
-    } else if (dateText.includes('north overnight') && dateText.includes('august 4')) {
-      endDate = new Date(2025, 7, 6); // August 6
-    } else if (dateText.includes('off shabbos') && dateText.includes('august 8')) {
-      endDate = new Date(2025, 7, 9); // August 9
-    } else if (dateText.includes('old city shabbos')) {
-      endDate = new Date(2025, 7, 2); // August 2
-    } else if (dateText.includes('tzfat') && dateText.includes('july 24')) {
-      endDate = new Date(2025, 6, 27); // July 27
-    } else if (dateText.includes('9 days')) {
-      endDate = new Date(2025, 7, 1); // August 1
-    } else if (dateText.includes('shabbos migdal')) {
-      endDate = new Date(2025, 6, 21); // July 21
-    }
-    
-    return endDate;
   };
 
   const getDaysInMonth = (year: number, month: number) => {
@@ -180,21 +109,41 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     targetDate.setHours(0, 0, 0, 0);
     
     return items.filter(item => {
-      // First check if the item's fullDate matches the target date
       const itemDate = new Date(item.fullDate);
       itemDate.setHours(0, 0, 0, 0);
       
+      // Direct date match
       if (itemDate.getTime() === targetDate.getTime()) {
         return true;
       }
       
-      // Also check if it's part of a multi-day event
+      // Multi-day event check - use the same logic as timeline
       if (item.isMultiDay) {
         const startDate = new Date(item.fullDate);
         startDate.setHours(0, 0, 0, 0);
-        const endDate = parseMultiDayRange(item.date, startDate);
-        endDate.setHours(0, 0, 0, 0);
         
+        // Parse end date from the date string
+        let endDate = new Date(startDate);
+        const dateText = item.date.toLowerCase();
+        
+        // Handle specific multi-day events with exact end dates
+        if (dateText.includes('tzfat') && dateText.includes('july 24')) {
+          endDate = new Date(2025, 6, 27); // July 27
+        } else if (dateText.includes('9 days') && dateText.includes('july 27')) {
+          endDate = new Date(2025, 7, 1); // August 1
+        } else if (dateText.includes('eilat') && dateText.includes('august 11')) {
+          endDate = new Date(2025, 7, 13); // August 13
+        } else if (dateText.includes('north overnight') && dateText.includes('august 4')) {
+          endDate = new Date(2025, 7, 6); // August 6
+        } else if (dateText.includes('off shabbos') && dateText.includes('august 8')) {
+          endDate = new Date(2025, 7, 9); // August 9
+        } else if (dateText.includes('old city shabbos') && dateText.includes('august 1')) {
+          endDate = new Date(2025, 7, 2); // August 2
+        } else if (dateText.includes('shabbos migdal') && dateText.includes('july 20')) {
+          endDate = new Date(2025, 6, 21); // July 21
+        }
+        
+        endDate.setHours(0, 0, 0, 0);
         return targetDate >= startDate && targetDate <= endDate;
       }
       
@@ -205,39 +154,15 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   const isPartOfMultiDayEvent = (year: number, month: number, day: number | null) => {
     if (!day) return false;
     
-    const targetDate = new Date(year, month, day);
-    targetDate.setHours(0, 0, 0, 0);
-    
-    return items.some(item => {
-      if (!item.isMultiDay) return false;
-      
-      const itemStartDate = new Date(item.fullDate);
-      itemStartDate.setHours(0, 0, 0, 0);
-      
-      const endDate = parseMultiDayRange(item.date, itemStartDate);
-      endDate.setHours(0, 0, 0, 0);
-      
-      return targetDate >= itemStartDate && targetDate <= endDate;
-    });
+    const activities = getActivitiesForDay(year, month, day);
+    return activities.some(activity => activity.isMultiDay);
   };
 
   const getMultiDayEventForDay = (year: number, month: number, day: number | null) => {
     if (!day) return null;
     
-    const targetDate = new Date(year, month, day);
-    targetDate.setHours(0, 0, 0, 0);
-    
-    return items.find(item => {
-      if (!item.isMultiDay) return false;
-      
-      const itemStartDate = new Date(item.fullDate);
-      itemStartDate.setHours(0, 0, 0, 0);
-      
-      const endDate = parseMultiDayRange(item.date, itemStartDate);
-      endDate.setHours(0, 0, 0, 0);
-      
-      return targetDate >= itemStartDate && targetDate <= endDate;
-    }) || null;
+    const activities = getActivitiesForDay(year, month, day);
+    return activities.find(activity => activity.isMultiDay) || null;
   };
 
   const handleEditClick = (item: ItineraryItem) => {
@@ -272,11 +197,11 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-0">
-      {monthsToShow.map(({ year, month }) => {
+      {monthsToShow.map(({ year, month }, monthIndex) => {
         const days = getDaysInMonth(year, month);
         
         return (
-          <div key={`${year}-${month}`} className="mb-8">
+          <div key={`${year}-${month}`} className={monthIndex === 0 ? 'mb-0' : 'mb-8'}>
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
               {monthNames[month]} {year}
             </h2>
@@ -308,7 +233,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                         className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
                           day ? 'bg-white' : 'bg-gray-50'
                         } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
-                          isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.id) : ''
+                          isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
                         }`}
                       >
                         {day && (
