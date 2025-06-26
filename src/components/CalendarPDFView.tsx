@@ -30,7 +30,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
       cultural: Palette
     };
     const IconComponent = icons[type as keyof typeof icons] || Palette;
-    return <IconComponent className="w-3 h-3" />;
+    return <IconComponent className="w-2 h-2" />;
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
@@ -177,26 +177,26 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-white p-8">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">Camp Sdei Chemed - Boys 2025</h1>
-        <p className="text-lg text-gray-600">Summer Itinerary Calendar</p>
+    <div className="w-full min-h-screen bg-white p-4">
+      <div className="text-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">Camp Sdei Chemed - Boys 2025</h1>
+        <p className="text-sm text-gray-600">Summer Itinerary Calendar</p>
       </div>
 
       {monthsToShow.map(({ year, month }) => {
         const days = getDaysInMonth(year, month);
         
         return (
-          <div key={`${year}-${month}`} className="mb-12 page-break-inside-avoid">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          <div key={`${year}-${month}`} className="mb-6 page-break-inside-avoid">
+            <h2 className="text-xl font-bold text-gray-800 mb-3 text-center">
               {monthNames[month]} {year}
             </h2>
 
             <Card className="overflow-hidden">
               <CardContent className="p-0">
-                <div className="grid grid-cols-7 bg-gray-100 border-b-2 border-gray-300">
-                  {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
-                    <div key={day} className="p-4 text-center font-bold text-gray-700 border-r border-gray-300 last:border-r-0">
+                <div className="grid grid-cols-7 bg-gray-100 border-b border-gray-300">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="p-2 text-center text-xs font-bold text-gray-700 border-r border-gray-300 last:border-r-0">
                       {day}
                     </div>
                   ))}
@@ -214,7 +214,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                     return (
                       <div
                         key={index}
-                        className={`h-32 p-3 border-r border-b border-gray-300 last:border-r-0 flex flex-col ${
+                        className={`h-20 p-1 border-r border-b border-gray-300 last:border-r-0 flex flex-col ${
                           day ? 'bg-white' : 'bg-gray-50'
                         } ${
                           isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -222,38 +222,40 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                       >
                         {day && (
                           <>
-                            <div className="text-lg font-bold mb-2 text-gray-800">
+                            <div className="text-sm font-bold mb-1 text-gray-800">
                               {day}
                             </div>
                             
                             {isMultiDay && multiDayEvent && (
-                              <div className="mb-2">
-                                <div className="text-xs font-semibold text-gray-800 px-2 py-1 bg-white/50 rounded truncate">
-                                  {multiDayEvent.title}
+                              <div className="mb-1">
+                                <div className="text-[9px] font-semibold text-gray-800 px-1 py-0.5 bg-white/50 rounded truncate leading-tight">
+                                  {multiDayEvent.title.length > 12 ? multiDayEvent.title.substring(0, 12) + '...' : multiDayEvent.title}
                                 </div>
                               </div>
                             )}
                             
-                            <div className="space-y-1 flex-1">
-                              {regularActivities.slice(0, 2).map(activity => (
+                            <div className="space-y-0.5 flex-1 overflow-hidden">
+                              {regularActivities.slice(0, 1).map(activity => (
                                 <div
                                   key={activity.id}
-                                  className="text-xs p-1 bg-gray-100 rounded flex items-center gap-1 truncate"
+                                  className="text-[8px] p-0.5 bg-gray-100 rounded flex items-center gap-0.5 truncate leading-tight"
                                 >
                                   {getTypeIcon(activity.type)}
-                                  <span className="truncate font-medium">{activity.title}</span>
+                                  <span className="truncate font-medium">
+                                    {activity.title.length > 8 ? activity.title.substring(0, 8) + '...' : activity.title}
+                                  </span>
                                 </div>
                               ))}
-                              {regularActivities.length > 2 && (
-                                <div className="text-xs text-gray-500 font-medium">
-                                  +{regularActivities.length - 2} more
+                              {regularActivities.length > 1 && (
+                                <div className="text-[8px] text-gray-500 font-medium">
+                                  +{regularActivities.length - 1}
                                 </div>
                               )}
                             </div>
                             
                             {primaryEmoji && (
                               <div className="mt-auto flex justify-center items-center">
-                                <span className="text-2xl">{primaryEmoji}</span>
+                                <span className="text-lg">{primaryEmoji}</span>
                               </div>
                             )}
                           </>
