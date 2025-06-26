@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -12,7 +11,7 @@ import { itineraryData } from "@/data/itineraryData";
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [view, setView] = useState<'timeline' | 'calendar'>('timeline');
+  const [view, setView] = useState<'timeline' | 'calendar'>('calendar');
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -31,6 +31,21 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
     return colors[type as keyof typeof colors] || colors.cultural;
   };
 
+  const getMultiDayBackgroundColor = (eventId: string) => {
+    const colors = [
+      'bg-gradient-to-r from-blue-50 to-indigo-100',
+      'bg-gradient-to-r from-green-50 to-emerald-100',
+      'bg-gradient-to-r from-purple-50 to-violet-100',
+      'bg-gradient-to-r from-orange-50 to-amber-100',
+      'bg-gradient-to-r from-pink-50 to-rose-100',
+      'bg-gradient-to-r from-teal-50 to-cyan-100',
+    ];
+    
+    // Create a simple hash from the event ID to consistently assign colors
+    const hash = eventId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -220,7 +235,7 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                   className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
                     day ? 'bg-white' : 'bg-gray-50'
                   } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
-                    isMultiDay && multiDayEvent ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-l-4 border-l-indigo-400' : ''
+                    isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.id) : ''
                   }`}
                 >
                   {day && (
@@ -234,9 +249,9 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                       {/* Multi-day event indicator */}
                       {isMultiDay && multiDayEvent && (
                         <div className="mb-2">
-                          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 text-xs px-1 py-0.5 w-full justify-start">
+                          <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate">
                             {multiDayEvent.title}
-                          </Badge>
+                          </div>
                         </div>
                       )}
                       
