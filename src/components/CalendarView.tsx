@@ -63,7 +63,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
-    // Special colors for specific events
     if (eventTitle.toLowerCase().includes('tzfat')) {
       return 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200';
     }
@@ -71,7 +70,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200';
     }
     
-    // Default colors for other multi-day events
     const colors = [
       'bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200',
       'bg-gradient-to-r from-green-50 to-emerald-100 border-green-200',
@@ -112,35 +110,36 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       const itemDate = new Date(item.fullDate);
       itemDate.setHours(0, 0, 0, 0);
       
-      // Direct date match
+      // Check if the target date matches the item's date exactly
       if (itemDate.getTime() === targetDate.getTime()) {
         return true;
       }
       
-      // Multi-day event check - use the same logic as timeline
+      // For multi-day events, check if target date falls within the range
       if (item.isMultiDay) {
         const startDate = new Date(item.fullDate);
         startDate.setHours(0, 0, 0, 0);
         
-        // Parse end date from the date string
         let endDate = new Date(startDate);
         const dateText = item.date.toLowerCase();
         
-        // Handle specific multi-day events with exact end dates
-        if (dateText.includes('tzfat') && dateText.includes('july 24')) {
-          endDate = new Date(2025, 6, 27); // July 27
-        } else if (dateText.includes('9 days') && dateText.includes('july 27')) {
-          endDate = new Date(2025, 7, 1); // August 1
-        } else if (dateText.includes('eilat') && dateText.includes('august 11')) {
-          endDate = new Date(2025, 7, 13); // August 13
-        } else if (dateText.includes('north overnight') && dateText.includes('august 4')) {
-          endDate = new Date(2025, 7, 6); // August 6
-        } else if (dateText.includes('off shabbos') && dateText.includes('august 8')) {
-          endDate = new Date(2025, 7, 9); // August 9
-        } else if (dateText.includes('old city shabbos') && dateText.includes('august 1')) {
-          endDate = new Date(2025, 7, 2); // August 2
-        } else if (dateText.includes('shabbos migdal') && dateText.includes('july 20')) {
+        // Parse multi-day event end dates based on the date string
+        if (dateText.includes('july 9') && dateText.includes('10')) {
+          endDate = new Date(2025, 6, 10); // July 10
+        } else if (dateText.includes('july 17') && dateText.includes('21')) {
           endDate = new Date(2025, 6, 21); // July 21
+        } else if (dateText.includes('july 24') && dateText.includes('27')) {
+          endDate = new Date(2025, 6, 27); // July 27
+        } else if (dateText.includes('july 27') && dateText.includes('august 1')) {
+          endDate = new Date(2025, 7, 1); // August 1
+        } else if (dateText.includes('august 1') && dateText.includes('2')) {
+          endDate = new Date(2025, 7, 2); // August 2
+        } else if (dateText.includes('august 4') && dateText.includes('6')) {
+          endDate = new Date(2025, 7, 6); // August 6
+        } else if (dateText.includes('august 8') && dateText.includes('9')) {
+          endDate = new Date(2025, 7, 9); // August 9
+        } else if (dateText.includes('august 11') && dateText.includes('13')) {
+          endDate = new Date(2025, 7, 13); // August 13
         }
         
         endDate.setHours(0, 0, 0, 0);
@@ -197,16 +196,16 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-0">
-      {monthsToShow.map(({ year, month }, monthIndex) => {
+      {monthsToShow.map(({ year, month }) => {
         const days = getDaysInMonth(year, month);
         
         return (
-          <div key={`${year}-${month}`} className={monthIndex === 0 ? 'mb-0' : 'mb-8'}>
+          <div key={`${year}-${month}`}>
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
               {monthNames[month]} {year}
             </h2>
 
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden mb-0">
               <CardContent className="p-0">
                 <div className="grid grid-cols-7 bg-gray-50 border-b">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
