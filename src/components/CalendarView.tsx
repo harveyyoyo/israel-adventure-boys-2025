@@ -232,7 +232,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const generatePDF = () => {
-    window.print();
+    window.open('/calendar-pdf', '_blank');
   };
 
   // Only show July and August 2025
