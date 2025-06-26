@@ -156,6 +156,38 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return activities.find(activity => activity.isMultiDay) || null;
   };
 
+  const getEventEmoji = (title: string, type: string) => {
+    const titleLower = title.toLowerCase();
+    
+    // Specific event emojis
+    if (titleLower.includes('shabbos')) return '🕯️';
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) return '🏔️';
+    if (titleLower.includes('wall') || titleLower.includes('kotel')) return '🕊️';
+    if (titleLower.includes('museum')) return '🏛️';
+    if (titleLower.includes('market') || titleLower.includes('shuk')) return '🛒';
+    if (titleLower.includes('beach') || titleLower.includes('eilat')) return '🏖️';
+    if (titleLower.includes('hike') || titleLower.includes('hiking')) return '🥾';
+    if (titleLower.includes('yurts') || titleLower.includes('overnight')) return '⛺';
+    if (titleLower.includes('old city')) return '🏰';
+    if (titleLower.includes('9 days')) return '🕊️';
+    if (titleLower.includes('flight') || titleLower.includes('travel')) return '✈️';
+    if (titleLower.includes('pool') || titleLower.includes('swim')) return '🏊';
+    if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
+    if (titleLower.includes('tour')) return '🚌';
+    if (titleLower.includes('activity')) return '🎯';
+    
+    // Type-based fallback emojis
+    switch (type) {
+      case 'spiritual': return '🙏';
+      case 'adventure': return '⛰️';
+      case 'educational': return '📚';
+      case 'leisure': return '☕';
+      case 'travel': return '🚐';
+      case 'cultural': return '🎨';
+      default: return '📅';
+    }
+  };
+
   const handleEditClick = (item: ItineraryItem) => {
     setEditingItem(item);
     setEditForm({
@@ -221,7 +253,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     return (
                       <div
                         key={index}
-                        className={`min-h-[160px] p-2 border-r border-b last:border-r-0 ${
+                        className={`min-h-[180px] p-2 border-r border-b last:border-r-0 ${
                           day ? 'bg-white' : 'bg-gray-50'
                         } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
                           isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -237,8 +269,9 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                             
                             {isMultiDay && multiDayEvent && (
                               <div className="mb-2 flex items-center justify-between">
-                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1">
-                                  {multiDayEvent.title}
+                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1 flex items-center gap-1">
+                                  <span className="text-sm">{getEventEmoji(multiDayEvent.title, multiDayEvent.type)}</span>
+                                  <span className="truncate">{multiDayEvent.title}</span>
                                 </div>
                                 <Button 
                                   size="sm" 
@@ -257,16 +290,19 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                   key={activity.id}
                                   className="text-xs p-1 rounded truncate flex items-center justify-between group"
                                 >
-                                  <Badge 
-                                    className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1`}
-                                  >
-                                    {getTypeIcon(activity.type)}
-                                    {activity.title}
-                                  </Badge>
+                                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                                    <span className="text-sm flex-shrink-0">{getEventEmoji(activity.title, activity.type)}</span>
+                                    <Badge 
+                                      className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
+                                    >
+                                      {getTypeIcon(activity.type)}
+                                      <span className="truncate">{activity.title}</span>
+                                    </Badge>
+                                  </div>
                                   <Button 
                                     size="sm" 
                                     variant="ghost" 
-                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0"
                                     onClick={() => handleEditClick(activity)}
                                   >
                                     <Edit3 className="w-2 h-2" />
