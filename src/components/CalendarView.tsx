@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { ItineraryItem } from '@/data/itineraryData';
 
 interface CalendarViewProps {
@@ -77,6 +78,88 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
     });
   };
 
+  const isPartOfMultiDayEvent = (day: number | null) => {
+    if (!day) return false;
+    
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return items.some(item => {
+      if (!item.isMultiDay) return false;
+      
+      const itemStartDate = new Date(item.fullDate);
+      itemStartDate.setHours(0, 0, 0, 0);
+      
+      // Parse the date range from the date string for multi-day events
+      const dateText = item.date.toLowerCase();
+      let endDate = new Date(itemStartDate);
+      
+      if (dateText.includes('july') && dateText.includes('august')) {
+        // Cross-month event
+        if (dateText.includes('august 1')) endDate = new Date(2025, 7, 1);
+        else if (dateText.includes('august 2')) endDate = new Date(2025, 7, 2);
+        else if (dateText.includes('august 6')) endDate = new Date(2025, 7, 6);
+        else if (dateText.includes('august 9')) endDate = new Date(2025, 7, 9);
+        else if (dateText.includes('august 13')) endDate = new Date(2025, 7, 13);
+      } else if (dateText.includes('-')) {
+        // Same month range
+        const parts = dateText.split('-');
+        if (parts.length >= 2) {
+          const endPart = parts[1].trim();
+          const endDay = parseInt(endPart.match(/\d+/)?.[0] || '0');
+          if (endDay > 0) {
+            endDate = new Date(itemStartDate.getFullYear(), itemStartDate.getMonth(), endDay);
+          }
+        }
+      }
+      
+      endDate.setHours(0, 0, 0, 0);
+      
+      return targetDate >= itemStartDate && targetDate <= endDate;
+    });
+  };
+
+  const getMultiDayEventForDay = (day: number | null) => {
+    if (!day) return null;
+    
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return items.find(item => {
+      if (!item.isMultiDay) return false;
+      
+      const itemStartDate = new Date(item.fullDate);
+      itemStartDate.setHours(0, 0, 0, 0);
+      
+      // Parse the date range from the date string for multi-day events
+      const dateText = item.date.toLowerCase();
+      let endDate = new Date(itemStartDate);
+      
+      if (dateText.includes('july') && dateText.includes('august')) {
+        // Cross-month event
+        if (dateText.includes('august 1')) endDate = new Date(2025, 7, 1);
+        else if (dateText.includes('august 2')) endDate = new Date(2025, 7, 2);
+        else if (dateText.includes('august 6')) endDate = new Date(2025, 7, 6);
+        else if (dateText.includes('august 9')) endDate = new Date(2025, 7, 9);
+        else if (dateText.includes('august 13')) endDate = new Date(2025, 7, 13);
+      } else if (dateText.includes('-')) {
+        // Same month range
+        const parts = dateText.split('-');
+        if (parts.length >= 2) {
+          const endPart = parts[1].trim();
+          const endDay = parseInt(endPart.match(/\d+/)?.[0] || '0');
+          if (endDay > 0) {
+            endDate = new Date(itemStartDate.getFullYear(), itemStartDate.getMonth(), endDay);
+          }
+        }
+      }
+      
+      endDate.setHours(0, 0, 0, 0);
+      
+      return targetDate >= itemStartDate && targetDate <= endDate;
+    }) || null;
+  };
+
   const days = getDaysInMonth();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -128,13 +211,17 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
               const activities = getActivitiesForDay(day);
               const currentDay = day ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day) : null;
               const isToday = currentDay && currentDay.getTime() === today.getTime();
+              const isMultiDay = isPartOfMultiDayEvent(day);
+              const multiDayEvent = getMultiDayEventForDay(day);
               
               return (
                 <div
                   key={index}
                   className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
                     day ? 'bg-white' : 'bg-gray-50'
-                  } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''}`}
+                  } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
+                    isMultiDay && multiDayEvent ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-l-4 border-l-indigo-400' : ''
+                  }`}
                 >
                   {day && (
                     <>
@@ -143,8 +230,18 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                       }`}>
                         {day}
                       </div>
+                      
+                      {/* Multi-day event indicator */}
+                      {isMultiDay && multiDayEvent && (
+                        <div className="mb-2">
+                          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 text-xs px-1 py-0.5 w-full justify-start">
+                            {multiDayEvent.title}
+                          </Badge>
+                        </div>
+                      )}
+                      
                       <div className="space-y-1">
-                        {activities.slice(0, 3).map(activity => (
+                        {activities.slice(0, isMultiDay ? 2 : 3).map(activity => (
                           <div
                             key={activity.id}
                             className="text-xs p-1 rounded truncate"
@@ -157,10 +254,34 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                             </Badge>
                           </div>
                         ))}
-                        {activities.length > 3 && (
-                          <div className="text-xs text-gray-500 px-1">
-                            +{activities.length - 3} more
-                          </div>
+                        {activities.length > (isMultiDay ? 2 : 3) && (
+                          <HoverCard>
+                            <HoverCardTrigger asChild>
+                              <div className="text-xs text-gray-500 px-1 cursor-pointer hover:text-gray-700">
+                                +{activities.length - (isMultiDay ? 2 : 3)} more
+                              </div>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-80">
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-sm">Additional Activities</h4>
+                                <div className="space-y-1">
+                                  {activities.slice(isMultiDay ? 2 : 3).map(activity => (
+                                    <div key={activity.id} className="flex items-center gap-2">
+                                      <div className={`w-3 h-3 rounded-full ${
+                                        activity.type === 'spiritual' ? 'bg-blue-400' :
+                                        activity.type === 'adventure' ? 'bg-orange-400' :
+                                        activity.type === 'educational' ? 'bg-green-400' :
+                                        activity.type === 'leisure' ? 'bg-purple-400' :
+                                        activity.type === 'travel' ? 'bg-gray-400' :
+                                        'bg-yellow-400'
+                                      }`} />
+                                      <span className="text-sm">{activity.title}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
                         )}
                       </div>
                     </>
