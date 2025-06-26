@@ -93,9 +93,9 @@ const Index = () => {
         <SidebarInset className="flex-1">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white/80 backdrop-blur-sm px-4">
             <SidebarTrigger className="ml-0" />
-            <div className="flex-1 text-center">
-              <h1 className="text-lg font-semibold text-gray-800 md:hidden">
-                Israel Adventure Boys 2025
+            <div className="flex-1 text-center md:hidden">
+              <h1 className="text-base font-semibold text-gray-800">
+                Camp Sdei Chemed - Boys 2025
               </h1>
             </div>
           </header>
