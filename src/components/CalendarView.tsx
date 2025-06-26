@@ -59,7 +59,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       cultural: Palette
     };
     const IconComponent = icons[type as keyof typeof icons] || Palette;
-    return <IconComponent className="w-3 h-3" />;
+    return <IconComponent className="w-2 h-2" />;
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
@@ -235,10 +235,9 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     window.open('/calendar-pdf', '_blank');
   };
 
-  // Only show July and August 2025
   const monthsToShow = [
-    { year: 2025, month: 6 }, // July
-    { year: 2025, month: 7 }, // August
+    { year: 2025, month: 6 },
+    { year: 2025, month: 7 },
   ];
   
   const today = new Date();
@@ -281,7 +280,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     const multiDayEvent = getMultiDayEventForDay(year, month, day);
                     const primaryEmoji = getPrimaryEmojiForDay(year, month, day);
                     
-                    // Filter out multi-day events from regular activities to avoid duplication
                     const regularActivities = activities.filter(activity => !activity.isMultiDay);
                     
                     return (
@@ -303,8 +301,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                             
                             {isMultiDay && multiDayEvent && (
                               <div className="mb-2 flex items-center justify-between print:pr-0">
-                                <div className="text-xs font-medium text-gray-800 px-2 py-1 truncate flex-1">
-                                  <span className="truncate">{multiDayEvent.title}</span>
+                                <div className="text-xs font-medium text-gray-800 px-2 py-1 flex-1">
+                                  <span>{multiDayEvent.title}</span>
                                 </div>
                                 <Button 
                                   size="sm" 
@@ -321,14 +319,14 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                               {regularActivities.map(activity => (
                                 <div
                                   key={activity.id}
-                                  className="text-xs p-1 rounded truncate flex items-center justify-between group"
+                                  className="text-xs p-1 rounded flex items-center justify-between group"
                                 >
                                   <div className="flex items-center gap-1 flex-1 min-w-0">
                                     <Badge 
                                       className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
                                     >
                                       {getTypeIcon(activity.type)}
-                                      <span className="truncate">{activity.title}</span>
+                                      <span>{activity.title}</span>
                                     </Badge>
                                   </div>
                                   <Button 
@@ -343,7 +341,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                               ))}
                             </div>
                             
-                            {/* Single large emoji at the bottom */}
                             {primaryEmoji && (
                               <div className="mt-auto pt-2 flex justify-center items-center flex-1 min-h-[40px]">
                                 <span className="text-4xl md:text-5xl lg:text-6xl">{primaryEmoji}</span>

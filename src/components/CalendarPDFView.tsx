@@ -130,10 +130,10 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return null;
   };
 
-  // Generate calendar days starting from July 6, 2025 to August 24, 2025
+  // Generate calendar days starting from July 8, 2025 to August 18, 2025
   const generateCalendarDays = () => {
-    const startDate = new Date(2025, 6, 6); // July 6, 2025
-    const endDate = new Date(2025, 7, 24); // August 24, 2025
+    const startDate = new Date(2025, 6, 8); // July 8, 2025
+    const endDate = new Date(2025, 7, 18); // August 18, 2025
     const days = [];
     
     // Add empty cells to align the first day with correct day of week
@@ -156,7 +156,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
 
   return (
     <div className="w-full min-h-screen bg-white p-2">
-      <div className="text-center mb-3">
+      <div className="text-center mb-2">
         <h1 className="text-xl font-bold text-gray-800 mb-1">Camp Sdei Chemed - Boys 2025</h1>
         <p className="text-xs text-gray-600">Summer Itinerary Calendar - July & August</p>
       </div>
@@ -165,7 +165,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
         <CardContent className="p-0">
           <div className="grid grid-cols-7 bg-gray-100 border-b border-gray-300">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-1 text-center text-[9px] font-bold text-gray-700 border-r border-gray-300 last:border-r-0">
+              <div key={day} className="p-1 text-center text-[8px] font-bold text-gray-700 border-r border-gray-300 last:border-r-0">
                 {day}
               </div>
             ))}
@@ -183,7 +183,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
               return (
                 <div
                   key={index}
-                  className={`h-16 p-0.5 border-r border-b border-gray-300 last:border-r-0 flex flex-col text-[7px] ${
+                  className={`h-16 p-0.5 border-r border-b border-gray-300 last:border-r-0 flex flex-col text-[5px] ${
                     day ? 'bg-white' : 'bg-gray-50'
                   } ${
                     isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -191,19 +191,20 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                 >
                   {day && (
                     <>
-                      <div className="text-[8px] font-bold mb-0.5 text-gray-800">
+                      <div className="text-[7px] font-bold mb-0.5 text-gray-800">
                         {day.getDate()}
-                        {day.getDate() === 1 && (
-                          <span className="ml-1 text-[6px] text-gray-600">
-                            {day.getMonth() === 6 ? 'Jul' : 'Aug'}
-                          </span>
+                        {day.getDate() === 8 && day.getMonth() === 6 && (
+                          <span className="ml-1 text-[5px] text-gray-600">Jul</span>
+                        )}
+                        {day.getDate() === 1 && day.getMonth() === 7 && (
+                          <span className="ml-1 text-[5px] text-gray-600">Aug</span>
                         )}
                       </div>
                       
                       {isMultiDay && multiDayEvent && (
                         <div className="mb-0.5">
-                          <div className="text-[6px] font-semibold text-gray-800 px-0.5 py-0.5 bg-white/50 rounded truncate leading-tight">
-                            {multiDayEvent.title.length > 10 ? multiDayEvent.title.substring(0, 10) + '...' : multiDayEvent.title}
+                          <div className="text-[5px] font-semibold text-gray-800 px-0.5 py-0.5 bg-white/50 rounded leading-tight">
+                            {multiDayEvent.title}
                           </div>
                         </div>
                       )}
@@ -212,11 +213,11 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         {regularActivities.map(activity => (
                           <div
                             key={activity.id}
-                            className="text-[6px] p-0.5 bg-gray-100 rounded flex items-center gap-0.5 truncate leading-tight"
+                            className="text-[4px] p-0.5 bg-gray-100 rounded flex items-center gap-0.5 leading-tight"
                           >
                             {getTypeIcon(activity.type)}
-                            <span className="truncate font-medium">
-                              {activity.title.length > 6 ? activity.title.substring(0, 6) + '...' : activity.title}
+                            <span className="font-medium">
+                              {activity.title}
                             </span>
                           </div>
                         ))}
@@ -224,7 +225,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                       
                       {primaryEmoji && (
                         <div className="mt-auto flex justify-center items-center">
-                          <span className="text-sm">{primaryEmoji}</span>
+                          <span className="text-xs">{primaryEmoji}</span>
                         </div>
                       )}
                     </>
