@@ -20,12 +20,12 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
 
   const getTypeColor = (type: string) => {
     const colors = {
-      spiritual: 'bg-blue-100 text-blue-800 border-blue-200',
-      adventure: 'bg-orange-100 text-orange-800 border-orange-200',
-      educational: 'bg-green-100 text-green-800 border-green-200',
-      leisure: 'bg-purple-100 text-purple-800 border-purple-200',
-      travel: 'bg-gray-100 text-gray-800 border-gray-200',
-      cultural: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      spiritual: 'bg-blue-500 text-white border-blue-600',
+      adventure: 'bg-orange-500 text-white border-orange-600',
+      educational: 'bg-green-500 text-white border-green-600',
+      leisure: 'bg-purple-500 text-white border-purple-600',
+      travel: 'bg-gray-500 text-white border-gray-600',
+      cultural: 'bg-yellow-500 text-white border-yellow-600'
     };
     return colors[type as keyof typeof colors] || colors.cultural;
   };
@@ -77,9 +77,85 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
     });
   };
 
+  const getMultiDayEvents = () => {
+    const multiDayEvents = items.filter(item => item.isMultiDay);
+    const events = [];
+
+    for (const event of multiDayEvents) {
+      const startDate = new Date(event.fullDate);
+      startDate.setHours(0, 0, 0, 0);
+      
+      // Parse end date from the date string for multi-day events
+      let endDate = new Date(startDate);
+      if (event.date.includes('-')) {
+        const dateRange = event.date.split(' - ')[1] || event.date.split('-')[1];
+        if (dateRange) {
+          const year = startDate.getFullYear();
+          const endDateStr = dateRange.trim();
+          
+          // Handle various date formats
+          if (endDateStr.includes(',')) {
+            endDate = new Date(endDateStr);
+          } else {
+            // Handle formats like "July 10" or "10"
+            const monthMatch = endDateStr.match(/([A-Za-z]+)\s+(\d+)/);
+            if (monthMatch) {
+              const monthName = monthMatch[1];
+              const day = parseInt(monthMatch[2]);
+              const monthIndex = monthNames.findIndex(m => m.toLowerCase().startsWith(monthName.toLowerCase()));
+              endDate = new Date(year, monthIndex, day);
+            } else {
+              // Just a day number, same month
+              const dayMatch = endDateStr.match(/(\d+)/);
+              if (dayMatch) {
+                endDate = new Date(year, startDate.getMonth(), parseInt(dayMatch[1]));
+              }
+            }
+          }
+        }
+      }
+      
+      endDate.setHours(0, 0, 0, 0);
+      
+      // Only include events that span within the current month
+      const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      
+      if (startDate <= monthEnd && endDate >= monthStart) {
+        events.push({
+          ...event,
+          startDate,
+          endDate,
+          duration: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        });
+      }
+    }
+
+    return events;
+  };
+
   const days = getDaysInMonth();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const multiDayEvents = getMultiDayEvents();
+
+  const isDateInMultiDayEvent = (day: number | null, multiDayEvent: any) => {
+    if (!day) return false;
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
+    return targetDate >= multiDayEvent.startDate && targetDate <= multiDayEvent.endDate;
+  };
+
+  const getMultiDayEventPosition = (day: number | null, multiDayEvent: any) => {
+    if (!day) return null;
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    if (targetDate.getTime() === multiDayEvent.startDate.getTime()) return 'start';
+    if (targetDate.getTime() === multiDayEvent.endDate.getTime()) return 'end';
+    if (targetDate > multiDayEvent.startDate && targetDate < multiDayEvent.endDate) return 'middle';
+    return null;
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -125,14 +201,14 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
           {/* Calendar days */}
           <div className="grid grid-cols-7">
             {days.map((day, index) => {
-              const activities = getActivitiesForDay(day);
+              const activities = getActivitiesForDay(day).filter(activity => !activity.isMultiDay);
               const currentDay = day ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day) : null;
               const isToday = currentDay && currentDay.getTime() === today.getTime();
               
               return (
                 <div
                   key={index}
-                  className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
+                  className={`min-h-[140px] p-2 border-r border-b last:border-r-0 relative ${
                     day ? 'bg-white' : 'bg-gray-50'
                   } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''}`}
                 >
@@ -143,8 +219,42 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                       }`}>
                         {day}
                       </div>
+                      
+                      {/* Multi-day events */}
+                      <div className="space-y-1 mb-2">
+                        {multiDayEvents.map((event, eventIndex) => {
+                          const position = getMultiDayEventPosition(day, event);
+                          if (!position) return null;
+                          
+                          return (
+                            <div
+                              key={`${event.id}-${eventIndex}`}
+                              className={`relative h-6 flex items-center text-xs font-medium px-2 ${getTypeColor(event.type)} ${
+                                position === 'start' ? 'rounded-l-md' : ''
+                              } ${
+                                position === 'end' ? 'rounded-r-md' : ''
+                              } ${
+                                position === 'middle' ? '' : ''
+                              }`}
+                              title={`${event.title} (${event.date})`}
+                            >
+                              {position === 'start' && (
+                                <span className="truncate">{event.title}</span>
+                              )}
+                              {position === 'middle' && (
+                                <div className="w-full h-1 bg-current opacity-50"></div>
+                              )}
+                              {position === 'end' && event.duration <= 3 && (
+                                <span className="truncate text-right ml-auto">{event.duration}d</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Single day activities */}
                       <div className="space-y-1">
-                        {activities.slice(0, 3).map(activity => (
+                        {activities.slice(0, 2).map(activity => (
                           <div
                             key={activity.id}
                             className="text-xs p-1 rounded truncate"
@@ -157,9 +267,9 @@ export const CalendarView = ({ items }: CalendarViewProps) => {
                             </Badge>
                           </div>
                         ))}
-                        {activities.length > 3 && (
+                        {activities.length > 2 && (
                           <div className="text-xs text-gray-500 px-1">
-                            +{activities.length - 3} more
+                            +{activities.length - 2} more
                           </div>
                         )}
                       </div>
