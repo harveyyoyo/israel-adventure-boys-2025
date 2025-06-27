@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +38,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   // Helper function to normalize dates for comparison
   const normalizeDate = (date: Date) => {
+    // Create a new date object using the year, month, and day components
+    // This ensures we get the local date without timezone issues
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
 
