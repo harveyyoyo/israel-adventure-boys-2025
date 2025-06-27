@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
@@ -15,6 +14,11 @@ interface CalendarPDFViewProps {
 }
 
 export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
+  // Helper function to normalize dates for comparison
+  const normalizeDate = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  };
+
   const getTypeIcon = (type: string) => {
     const icons = {
       spiritual: Heart,
@@ -76,21 +80,21 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   };
 
   const getActivitiesForDay = (targetDate: Date) => {
-    const targetDateStr = targetDate.toDateString();
+    const normalizedTargetDate = normalizeDate(targetDate);
     
     return items.filter(item => {
-      const itemStartDate = item.fullDate;
+      const itemStartDate = normalizeDate(item.fullDate);
       
       // For single-day events, check exact date match
       if (!item.isMultiDay || !item.endDate) {
-        return itemStartDate.toDateString() === targetDateStr;
+        return itemStartDate.getTime() === normalizedTargetDate.getTime();
       }
       
       // For multi-day events, check if target date falls within the inclusive range
-      const itemEndDate = item.endDate;
+      const itemEndDate = normalizeDate(item.endDate);
       
       // Check if target date is between start and end dates (inclusive)
-      return targetDate >= itemStartDate && targetDate <= itemEndDate;
+      return normalizedTargetDate >= itemStartDate && normalizedTargetDate <= itemEndDate;
     });
   };
 

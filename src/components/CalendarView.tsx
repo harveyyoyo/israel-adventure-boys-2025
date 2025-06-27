@@ -36,6 +36,11 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+  // Helper function to normalize dates for comparison
+  const normalizeDate = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  };
+
   const getTypeColor = (type: string) => {
     const colors = {
       spiritual: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -97,21 +102,21 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const getActivitiesForDay = (targetDate: Date) => {
-    const targetDateStr = targetDate.toDateString();
+    const normalizedTargetDate = normalizeDate(targetDate);
     
     return items.filter(item => {
-      const itemStartDate = item.fullDate;
+      const itemStartDate = normalizeDate(item.fullDate);
       
       // For single-day events, check exact date match
       if (!item.isMultiDay || !item.endDate) {
-        return itemStartDate.toDateString() === targetDateStr;
+        return itemStartDate.getTime() === normalizedTargetDate.getTime();
       }
       
       // For multi-day events, check if target date falls within the inclusive range
-      const itemEndDate = item.endDate;
+      const itemEndDate = normalizeDate(item.endDate);
       
       // Check if target date is between start and end dates (inclusive)
-      return targetDate >= itemStartDate && targetDate <= itemEndDate;
+      return normalizedTargetDate >= itemStartDate && normalizedTargetDate <= itemEndDate;
     });
   };
 
@@ -214,7 +219,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   const calendarDays = generateCalendarDays();
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const normalizedToday = normalizeDate(today);
 
   return (
     <div className="max-w-7xl mx-auto space-y-0">
@@ -243,7 +248,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
             <div className="grid grid-cols-7">
               {calendarDays.map((day, index) => {
                 const activities = day ? getActivitiesForDay(day) : [];
-                const isToday = day && day.toDateString() === today.toDateString();
+                const isToday = day && normalizeDate(day).getTime() === normalizedToday.getTime();
                 const isMultiDay = activities.some(activity => activity.isMultiDay);
                 const multiDayEvent = activities.find(activity => activity.isMultiDay);
                 const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
