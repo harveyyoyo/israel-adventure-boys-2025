@@ -75,23 +75,22 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return colors[hash % colors.length];
   };
 
-  const getActivitiesForDay = (date: Date) => {
+  const getActivitiesForDay = (targetDate: Date) => {
+    const targetDateStr = targetDate.toDateString();
+    
     return items.filter(item => {
-      const itemStartDate = new Date(item.fullDate);
+      const itemStartDate = item.fullDate;
       
+      // For single-day events, check exact date match
       if (!item.isMultiDay || !item.endDate) {
-        return (
-          itemStartDate.getFullYear() === date.getFullYear() &&
-          itemStartDate.getMonth() === date.getMonth() &&
-          itemStartDate.getDate() === date.getDate()
-        );
+        return itemStartDate.toDateString() === targetDateStr;
       }
       
-      const itemEndDate = new Date(item.endDate);
-      return (
-        date >= itemStartDate && 
-        date <= itemEndDate
-      );
+      // For multi-day events, check if target date falls within the inclusive range
+      const itemEndDate = item.endDate;
+      
+      // Check if target date is between start and end dates (inclusive)
+      return targetDate >= itemStartDate && targetDate <= itemEndDate;
     });
   };
 
@@ -125,8 +124,8 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     }
   };
 
-  const getPrimaryEmojiForDay = (date: Date) => {
-    const activities = getActivitiesForDay(date);
+  const getPrimaryEmojiForDay = (targetDate: Date) => {
+    const activities = getActivitiesForDay(targetDate);
     if (activities.length === 0) return null;
     
     const multiDayEvent = activities.find(activity => activity.isMultiDay);
@@ -142,9 +141,9 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return null;
   };
 
-  // Generate calendar days starting from July 8, 2025 to August 18, 2025
+  // Generate calendar days starting from July 9, 2025 to August 18, 2025
   const generateCalendarDays = () => {
-    const startDate = new Date(2025, 6, 8); // July 8, 2025
+    const startDate = new Date(2025, 6, 9); // July 9, 2025
     const endDate = new Date(2025, 7, 18); // August 18, 2025
     const days = [];
     
@@ -213,7 +212,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         isWeekend ? 'text-blue-700' : 'text-gray-800'
                       }`}>
                         {day.getDate()}
-                        {day.getDate() === 8 && day.getMonth() === 6 && (
+                        {day.getDate() === 9 && day.getMonth() === 6 && (
                           <span className="ml-1 text-[5px] text-indigo-600 font-bold">Jul</span>
                         )}
                         {day.getDate() === 1 && day.getMonth() === 7 && (
@@ -236,7 +235,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                             className={`text-[3px] p-0.5 rounded flex items-center gap-0.5 leading-tight font-medium ${getTypeColor(activity.type)}`}
                           >
                             {getTypeIcon(activity.type)}
-                            <span className="font-semibold">
+                            <span className="font-semibold text-[3px] leading-tight">
                               {activity.title}
                             </span>
                           </div>

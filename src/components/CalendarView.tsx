@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,64 +96,44 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return colors[hash % colors.length];
   };
 
-  const getDaysInMonth = (year: number, month: number) => {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startingDayOfWeek = firstDay.getDay();
-    
-    const days = [];
-    
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      days.push(day);
-    }
-    
-    return days;
-  };
-
-  const getActivitiesForDay = (year: number, month: number, day: number | null) => {
-    if (!day) return [];
-    
-    const targetDate = new Date(year, month, day);
+  const getActivitiesForDay = (targetDate: Date) => {
+    const targetDateStr = targetDate.toDateString();
     
     return items.filter(item => {
-      const itemStartDate = new Date(item.fullDate);
+      const itemStartDate = item.fullDate;
       
       // For single-day events, check exact date match
       if (!item.isMultiDay || !item.endDate) {
-        return (
-          itemStartDate.getFullYear() === targetDate.getFullYear() &&
-          itemStartDate.getMonth() === targetDate.getMonth() &&
-          itemStartDate.getDate() === targetDate.getDate()
-        );
+        return itemStartDate.toDateString() === targetDateStr;
       }
       
       // For multi-day events, check if target date falls within the inclusive range
-      const itemEndDate = new Date(item.endDate);
+      const itemEndDate = item.endDate;
       
       // Check if target date is between start and end dates (inclusive)
-      return (
-        targetDate >= itemStartDate && 
-        targetDate <= itemEndDate
-      );
+      return targetDate >= itemStartDate && targetDate <= itemEndDate;
     });
   };
 
-  const isPartOfMultiDayEvent = (year: number, month: number, day: number | null) => {
-    if (!day) return false;
+  const generateCalendarDays = () => {
+    const startDate = new Date(2025, 6, 9); // July 9, 2025
+    const endDate = new Date(2025, 7, 18); // August 18, 2025
+    const days = [];
     
-    const activities = getActivitiesForDay(year, month, day);
-    return activities.some(activity => activity.isMultiDay);
-  };
-
-  const getMultiDayEventForDay = (year: number, month: number, day: number | null) => {
-    if (!day) return null;
+    // Add empty cells to align the first day with correct day of week
+    const firstDayOfWeek = startDate.getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(null);
+    }
     
-    const activities = getActivitiesForDay(year, month, day);
-    return activities.find(activity => activity.isMultiDay) || null;
+    // Add all days from start to end
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return days;
   };
 
   const getEventEmoji = (title: string, type: string) => {
@@ -189,10 +168,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     }
   };
 
-  const getPrimaryEmojiForDay = (year: number, month: number, day: number | null) => {
-    if (!day) return null;
-    
-    const activities = getActivitiesForDay(year, month, day);
+  const getPrimaryEmojiForDay = (targetDate: Date) => {
+    const activities = getActivitiesForDay(targetDate);
     if (activities.length === 0) return null;
     
     // Prioritize multi-day events first
@@ -235,11 +212,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     window.open('/calendar-pdf', '_blank');
   };
 
-  const monthsToShow = [
-    { year: 2025, month: 6 },
-    { year: 2025, month: 7 },
-  ];
-  
+  const calendarDays = generateCalendarDays();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -252,111 +225,112 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
         </Button>
       </div>
 
-      {monthsToShow.map(({ year, month }) => {
-        const days = getDaysInMonth(year, month);
-        
-        return (
-          <div key={`${year}-${month}`}>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-              {monthNames[month]} {year}
-            </h2>
+      <div>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          Camp Sdei Chemed - Boys 2025 - July & August
+        </h2>
 
-            <Card className="overflow-hidden mb-0">
-              <CardContent className="p-0">
-                <div className="grid grid-cols-7 bg-gray-50 border-b">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="p-3 text-center font-semibold text-gray-600 border-r last:border-r-0">
-                      {day}
-                    </div>
-                  ))}
+        <Card className="overflow-hidden mb-0">
+          <CardContent className="p-0">
+            <div className="grid grid-cols-7 bg-gray-50 border-b">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="p-3 text-center font-semibold text-gray-600 border-r last:border-r-0">
+                  {day}
                 </div>
+              ))}
+            </div>
 
-                <div className="grid grid-cols-7">
-                  {days.map((day, index) => {
-                    const activities = getActivitiesForDay(year, month, day);
-                    const currentDay = day ? new Date(year, month, day) : null;
-                    const isToday = currentDay && currentDay.getTime() === today.getTime();
-                    const isMultiDay = isPartOfMultiDayEvent(year, month, day);
-                    const multiDayEvent = getMultiDayEventForDay(year, month, day);
-                    const primaryEmoji = getPrimaryEmojiForDay(year, month, day);
-                    
-                    const regularActivities = activities.filter(activity => !activity.isMultiDay);
-                    
-                    return (
-                      <div
-                        key={index}
-                        className={`min-h-[180px] p-2 border-r border-b last:border-r-0 flex flex-col ${
-                          day ? 'bg-white' : 'bg-gray-50'
-                        } ${isToday ? 'bg-blue-50 ring-2 ring-blue-200' : ''} ${
-                          isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
-                        }`}
-                      >
-                        {day && (
-                          <>
-                            <div className={`text-sm font-semibold mb-2 ${
-                              isToday ? 'text-blue-600' : 'text-gray-700'
-                            }`}>
-                              {day}
+            <div className="grid grid-cols-7">
+              {calendarDays.map((day, index) => {
+                const activities = day ? getActivitiesForDay(day) : [];
+                const isToday = day && day.toDateString() === today.toDateString();
+                const isMultiDay = activities.some(activity => activity.isMultiDay);
+                const multiDayEvent = activities.find(activity => activity.isMultiDay);
+                const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
+                
+                const regularActivities = activities.filter(activity => !activity.isMultiDay);
+                const dayOfWeek = day ? day.getDay() : 0;
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                
+                return (
+                  <div
+                    key={index}
+                    className={`min-h-[180px] p-2 border-r border-b last:border-r-0 flex flex-col ${
+                      day ? (isWeekend ? 'bg-blue-50' : 'bg-white') : 'bg-gray-50'
+                    } ${isToday ? 'bg-blue-100 ring-2 ring-blue-200' : ''} ${
+                      isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                    }`}
+                  >
+                    {day && (
+                      <>
+                        <div className={`text-sm font-semibold mb-2 ${
+                          isToday ? 'text-blue-600' : isWeekend ? 'text-blue-700' : 'text-gray-700'
+                        }`}>
+                          {day.getDate()}
+                          {day.getDate() === 9 && day.getMonth() === 6 && (
+                            <span className="ml-1 text-xs text-indigo-600 font-bold">Jul</span>
+                          )}
+                          {day.getDate() === 1 && day.getMonth() === 7 && (
+                            <span className="ml-1 text-xs text-indigo-600 font-bold">Aug</span>
+                          )}
+                        </div>
+                        
+                        {isMultiDay && multiDayEvent && (
+                          <div className="mb-2 flex items-center justify-between print:pr-0">
+                            <div className="text-xs font-medium text-gray-800 px-2 py-1 flex-1">
+                              <span>{multiDayEvent.title}</span>
                             </div>
-                            
-                            {isMultiDay && multiDayEvent && (
-                              <div className="mb-2 flex items-center justify-between print:pr-0">
-                                <div className="text-xs font-medium text-gray-800 px-2 py-1 flex-1">
-                                  <span>{multiDayEvent.title}</span>
-                                </div>
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  className="h-6 w-6 p-0 print:hidden"
-                                  onClick={() => handleEditClick(multiDayEvent)}
-                                >
-                                  <Edit3 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                            
-                            <div className="space-y-1 flex-1">
-                              {regularActivities.map(activity => (
-                                <div
-                                  key={activity.id}
-                                  className="text-xs p-1 rounded flex items-center justify-between group"
-                                >
-                                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                                    <Badge 
-                                      className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
-                                    >
-                                      {getTypeIcon(activity.type)}
-                                      <span>{activity.title}</span>
-                                    </Badge>
-                                  </div>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
-                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden"
-                                    onClick={() => handleEditClick(activity)}
-                                  >
-                                    <Edit3 className="w-2 h-2" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {primaryEmoji && (
-                              <div className="mt-auto pt-2 flex justify-center items-center flex-1 min-h-[40px]">
-                                <span className="text-4xl md:text-5xl lg:text-6xl">{primaryEmoji}</span>
-                              </div>
-                            )}
-                          </>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-6 w-6 p-0 print:hidden"
+                              onClick={() => handleEditClick(multiDayEvent)}
+                            >
+                              <Edit3 className="w-3 h-3" />
+                            </Button>
+                          </div>
                         )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      })}
+                        
+                        <div className="space-y-1 flex-1">
+                          {regularActivities.map(activity => (
+                            <div
+                              key={activity.id}
+                              className="text-xs p-1 rounded flex items-center justify-between group"
+                            >
+                              <div className="flex items-center gap-1 flex-1 min-w-0">
+                                <Badge 
+                                  className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
+                                >
+                                  {getTypeIcon(activity.type)}
+                                  <span className="text-xs leading-tight">{activity.title}</span>
+                                </Badge>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden"
+                                onClick={() => handleEditClick(activity)}
+                              >
+                                <Edit3 className="w-2 h-2" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {primaryEmoji && (
+                          <div className="mt-auto pt-2 flex justify-center items-center flex-1 min-h-[40px]">
+                            <span className="text-4xl md:text-5xl lg:text-6xl">{primaryEmoji}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       
       {/* Edit Dialog */}
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
