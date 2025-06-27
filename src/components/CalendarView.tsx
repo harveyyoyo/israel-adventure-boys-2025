@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,6 +104,29 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   const getActivitiesForDay = (targetDate: Date) => {
     const normalizedTargetDate = normalizeDate(targetDate);
+    
+    // Debug logging for July 10th
+    if (targetDate.getDate() === 10 && targetDate.getMonth() === 6) {
+      console.log('=== DEBUGGING JULY 10TH ===');
+      console.log('Target date:', targetDate);
+      console.log('Normalized target date:', normalizedTargetDate);
+      console.log('All items count:', items.length);
+      
+      // Check all July 10th items
+      const july10Items = items.filter(item => {
+        const itemDate = new Date(item.fullDate);
+        return itemDate.getDate() === 10 && itemDate.getMonth() === 6 && itemDate.getFullYear() === 2025;
+      });
+      console.log('July 10th items found:', july10Items);
+      
+      items.forEach(item => {
+        const itemStartDate = normalizeDate(item.fullDate);
+        const matches = itemStartDate.getTime() === normalizedTargetDate.getTime();
+        if (item.fullDate.getDate() === 10 && item.fullDate.getMonth() === 6) {
+          console.log('Item:', item.title, 'Date:', item.fullDate, 'Normalized:', itemStartDate, 'Matches:', matches);
+        }
+      });
+    }
     
     return items.filter(item => {
       const itemStartDate = normalizeDate(item.fullDate);
