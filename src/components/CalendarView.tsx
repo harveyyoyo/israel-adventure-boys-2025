@@ -20,6 +20,7 @@ import {
   Clock,
   Users
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CalendarViewProps {
   items: ItineraryItem[];
@@ -33,6 +34,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     date: '',
     type: '' as ItineraryItem['type']
   });
+  const isMobile = useIsMobile();
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -66,7 +68,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       cultural: Palette
     };
     const IconComponent = icons[type as keyof typeof icons] || Palette;
-    return <IconComponent className="w-2 h-2" />;
+    return <IconComponent className={isMobile ? "w-1.5 h-1.5" : "w-2 h-2"} />;
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
@@ -316,42 +318,44 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       </div>
 
       <div>
-        <div className="text-center mb-8">
+        <div className="text-center mb-4 md:mb-8">
           {/* Logo */}
-          <div className="flex justify-center items-center mb-4">
+          <div className="flex justify-center items-center mb-2 md:mb-4">
             <img 
               src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
               alt="Camp Sdei Chemed Logo" 
-              className="h-20 w-auto shadow-lg rounded-lg"
+              className={`${isMobile ? 'h-12' : 'h-20'} w-auto shadow-lg rounded-lg`}
             />
           </div>
-          <h2 className="text-4xl font-bold text-gray-800 mb-2">
+          <h2 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-gray-800 mb-1 md:mb-2`}>
             Camp Sdei Chemed - Boys 2025
           </h2>
-          <p className="text-lg text-gray-600 mb-4">July & August Adventure Calendar</p>
-          <div className="flex justify-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+          <p className={`${isMobile ? 'text-sm' : 'text-lg'} text-gray-600 mb-2 md:mb-4`}>
+            July & August Adventure Calendar
+          </p>
+          <div className={`flex justify-center gap-2 md:gap-4 ${isMobile ? 'text-xs' : 'text-sm'} text-gray-500 flex-wrap`}>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-500 rounded-full"></div>
               <span>Spiritual</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-orange-500 rounded-full"></div>
               <span>Adventure</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full"></div>
               <span>Educational</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-full"></div>
               <span>Leisure</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-gray-500 rounded-full"></div>
               <span>Travel</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-500 rounded-full"></div>
               <span>Cultural</span>
             </div>
           </div>
@@ -361,7 +365,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
           <CardContent className="p-0">
             <div className="grid grid-cols-7 bg-gradient-to-r from-gray-100 to-gray-200 border-b">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="p-4 text-center font-bold text-gray-700 border-r last:border-r-0 text-lg">
+                <div key={day} className={`p-2 md:p-4 text-center font-bold text-gray-700 border-r last:border-r-0 ${isMobile ? 'text-sm' : 'text-lg'}`}>
                   {day}
                 </div>
               ))}
@@ -386,7 +390,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                 return (
                   <div
                     key={index}
-                    className={`min-h-[200px] p-3 border-r border-b last:border-r-0 flex flex-col relative overflow-hidden ${
+                    className={`${isMobile ? 'min-h-[140px] p-1' : 'min-h-[200px] p-3'} border-r border-b last:border-r-0 flex flex-col relative overflow-hidden ${
                       day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-50'
                     } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2' : ''} ${
                       shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
@@ -399,63 +403,65 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                     
                     {day && (
                       <>
-                        <div className={`text-sm font-bold mb-3 relative z-10 ${
+                        <div className={`${isMobile ? 'text-xs' : 'text-sm'} font-bold ${isMobile ? 'mb-1' : 'mb-3'} relative z-10 ${
                           isToday ? 'text-blue-700' : isWeekend ? 'text-blue-800' : 'text-gray-800'
                         }`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-lg">{day.getDate()}</span>
+                            <span className={isMobile ? 'text-sm' : 'text-lg'}>{day.getDate()}</span>
                             {day.getDate() === 9 && day.getMonth() === 6 && (
-                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Jul</span>
+                              <span className={`${isMobile ? 'text-[10px] px-1 py-0.5' : 'text-xs px-2 py-1'} text-indigo-600 font-bold bg-indigo-100 rounded-full`}>Jul</span>
                             )}
                             {day.getDate() === 1 && day.getMonth() === 7 && (
-                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Aug</span>
+                              <span className={`${isMobile ? 'text-[10px] px-1 py-0.5' : 'text-xs px-2 py-1'} text-indigo-600 font-bold bg-indigo-100 rounded-full`}>Aug</span>
                             )}
                           </div>
                         </div>
                         
                         {isMultiDay && multiDayEvent && (
-                          <div className="mb-3 flex items-center justify-between relative z-10">
-                            <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1">
+                          <div className={`${isMobile ? 'mb-1' : 'mb-3'} flex items-center justify-between relative z-10`}>
+                            <div className={`${isMobile ? 'text-[9px] px-1 py-1' : 'text-xs px-3 py-2'} font-semibold text-gray-900 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1`}>
                               <div className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3 text-blue-600" />
-                                <span>{multiDayEvent.title}</span>
+                                <MapPin className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'} text-blue-600`} />
+                                <span className="truncate">{multiDayEvent.title}</span>
                               </div>
                             </div>
                             <Button 
                               size="sm" 
                               variant="ghost" 
-                              className="h-6 w-6 p-0 print:hidden bg-white/80 backdrop-blur-sm"
+                              className={`${isMobile ? 'h-4 w-4 p-0' : 'h-6 w-6 p-0'} print:hidden bg-white/80 backdrop-blur-sm`}
                               onClick={() => handleEditClick(multiDayEvent)}
                             >
-                              <Edit3 className="w-3 h-3" />
+                              <Edit3 className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'}`} />
                             </Button>
                           </div>
                         )}
                         
-                        <div className="space-y-2 flex-1 relative z-10">
+                        <div className={`${isMobile ? 'space-y-1' : 'space-y-2'} flex-1 relative z-10`}>
                           {regularActivities.map(activity => (
                             <div
                               key={activity.id}
-                              className="text-xs p-2 rounded-lg flex items-center justify-between group bg-white/90 backdrop-blur-sm border shadow-sm hover:shadow-md transition-all duration-200"
+                              className={`${isMobile ? 'text-[8px] p-1' : 'text-xs p-2'} rounded-lg flex items-center justify-between group bg-white/90 backdrop-blur-sm border shadow-sm hover:shadow-md transition-all duration-200`}
                             >
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-2xl flex-shrink-0">
+                              <div className="flex items-center gap-1 flex-1 min-w-0">
+                                <span className={`${isMobile ? 'text-lg' : 'text-2xl'} flex-shrink-0`}>
                                   {getEventEmoji(activity.title, activity.type)}
                                 </span>
                                 <Badge 
-                                  className={`${getTypeColor(activity.type)} text-xs px-2 py-1 flex-1 justify-start gap-1 min-w-0 font-medium`}
+                                  className={`${getTypeColor(activity.type)} ${isMobile ? 'text-[7px] px-1 py-0.5' : 'text-xs px-2 py-1'} flex-1 justify-start gap-1 min-w-0 font-medium`}
                                 >
                                   {getTypeIcon(activity.type)}
-                                  <span className="text-xs leading-tight font-semibold">{activity.title}</span>
+                                  <span className={`${isMobile ? 'text-[7px]' : 'text-xs'} leading-tight font-semibold truncate`}>
+                                    {activity.title}
+                                  </span>
                                 </Badge>
                               </div>
                               <Button 
                                 size="sm" 
                                 variant="ghost" 
-                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden"
+                                className={`${isMobile ? 'h-3 w-3 p-0' : 'h-4 w-4 p-0'} opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden`}
                                 onClick={() => handleEditClick(activity)}
                               >
-                                <Edit3 className="w-2 h-2" />
+                                <Edit3 className={`${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'}`} />
                               </Button>
                             </div>
                           ))}
@@ -463,8 +469,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                         
                         {/* Activity count indicator */}
                         {activities.length > 0 && (
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-bold text-gray-700 shadow-sm">
+                          <div className="absolute top-1 right-1 z-20">
+                            <div className={`bg-white/90 backdrop-blur-sm rounded-full ${isMobile ? 'px-1 py-0.5 text-[8px]' : 'px-2 py-1 text-xs'} font-bold text-gray-700 shadow-sm`}>
                               {activities.length}
                             </div>
                           </div>
