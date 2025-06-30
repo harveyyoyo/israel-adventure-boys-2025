@@ -1,29 +1,80 @@
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { ItineraryHeader } from "@/components/ItineraryHeader";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { CalendarView } from "@/components/CalendarView";
 import { AppSidebar } from "@/components/AppSidebar";
+import { GoogleCalendarSettings } from "@/components/GoogleCalendarSettings";
 import { itineraryData, ItineraryItem } from "@/data/itineraryData";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { GoogleCalendarService } from "@/lib/googleCalendar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Settings, Calendar, Database } from "lucide-react";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [view, setView] = useState<'timeline' | 'calendar'>('calendar');
-  const [items, setItems] = useState<ItineraryItem[]>(itineraryData);
+  const [dataSource, setDataSource] = useState<'local' | 'google'>('local');
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Google Calendar settings
+  const [googleApiKey, setGoogleApiKey] = useState(localStorage.getItem('googleApiKey') || 'AIzaSyCYaN-4ZaDF_HnJxhklQaSEtgC6o4qqiqs');
+  const [googleCalendarId, setGoogleCalendarId] = useState(localStorage.getItem('googleCalendarId') || 'primary');
+  
+  // Local data
+  const [localItems, setLocalItems] = useState<ItineraryItem[]>(itineraryData);
+  
+  // Date range for Google Calendar
+  const startDate = new Date(2025, 6, 7); // July 7, 2025
+  const endDate = new Date(2025, 7, 18); // August 18, 2025
+  
+  // Google Calendar data
+  const { items: googleItems, loading: googleLoading, error: googleError, refetch: refetchGoogle } = useGoogleCalendar({
+    apiKey: googleApiKey,
+    calendarId: googleCalendarId,
+    startDate,
+    endDate,
+    enabled: dataSource === 'google' && !!googleApiKey && !!googleCalendarId
+  });
+
+  // Use appropriate data source
+  const items = dataSource === 'google' ? googleItems : localItems;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const handleUpdateItem = (id: string, updates: Partial<ItineraryItem>) => {
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id 
-          ? { ...item, ...updates }
-          : item
-      )
-    );
+    if (dataSource === 'local') {
+      setLocalItems(prevItems => 
+        prevItems.map(item => 
+          item.id === id 
+            ? { ...item, ...updates }
+            : item
+        )
+      );
+    }
+    // Note: Google Calendar updates would require additional implementation
+  };
+
+  const handleSaveGoogleSettings = (apiKey: string, calendarId: string) => {
+    setGoogleApiKey(apiKey);
+    setGoogleCalendarId(calendarId);
+    localStorage.setItem('googleApiKey', apiKey);
+    localStorage.setItem('googleCalendarId', calendarId);
+    setShowSettings(false);
+  };
+
+  const handleTestGoogleConnection = async (apiKey: string, calendarId: string): Promise<boolean> => {
+    try {
+      const service = new GoogleCalendarService(apiKey, calendarId);
+      const testItems = await service.getItineraryItems(startDate, endDate);
+      return testItems.length >= 0; // If we get here, the connection worked
+    } catch (error) {
+      console.error('Google Calendar test failed:', error);
+      return false;
+    }
   };
 
   const filteredItems = useMemo(() => {
@@ -98,12 +149,80 @@ const Index = () => {
                 Camp Sdei Chemed - Boys 2025
               </h1>
             </div>
+            
+            {/* Data Source Toggle and Settings */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-white rounded-lg border p-1">
+                <Button
+                  size="sm"
+                  variant={dataSource === 'local' ? 'default' : 'ghost'}
+                  onClick={() => setDataSource('local')}
+                  className="flex items-center gap-1"
+                >
+                  <Database className="w-3 h-3" />
+                  Local
+                </Button>
+                <Button
+                  size="sm"
+                  variant={dataSource === 'google' ? 'default' : 'ghost'}
+                  onClick={() => setDataSource('google')}
+                  className="flex items-center gap-1"
+                >
+                  <Calendar className="w-3 h-3" />
+                  Google
+                </Button>
+              </div>
+              
+              <Dialog open={showSettings} onOpenChange={setShowSettings}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Google Calendar Settings</DialogTitle>
+                  </DialogHeader>
+                  <GoogleCalendarSettings
+                    apiKey={googleApiKey}
+                    calendarId={googleCalendarId}
+                    onSave={handleSaveGoogleSettings}
+                    onTest={handleTestGoogleConnection}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </header>
 
           <main className="flex-1 overflow-auto">
             <div className="container mx-auto px-4 py-8">
               <div className="hidden md:block">
                 <ItineraryHeader />
+              </div>
+              
+              {/* Data Source Status */}
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    Data Source: {dataSource === 'google' ? 'Google Calendar' : 'Local Data'}
+                  </span>
+                  {dataSource === 'google' && googleLoading && (
+                    <span className="text-sm text-blue-600">Loading...</span>
+                  )}
+                  {dataSource === 'google' && googleError && (
+                    <span className="text-sm text-red-600">Error: {googleError}</span>
+                  )}
+                  {dataSource === 'google' && !googleLoading && !googleError && (
+                    <span className="text-sm text-green-600">
+                      Connected ({googleItems.length} events, July 7 - Aug 18)
+                    </span>
+                  )}
+                </div>
+                {dataSource === 'google' && (
+                  <Button size="sm" variant="outline" onClick={refetchGoogle}>
+                    Refresh
+                  </Button>
+                )}
               </div>
               
               <div className="max-w-7xl mx-auto">

@@ -31,50 +31,49 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
       cultural: Palette
     };
     const IconComponent = icons[type as keyof typeof icons] || Palette;
-    return <IconComponent className="w-1 h-1" />;
+    return <IconComponent className="w-2 h-2" />;
   };
 
   const getTypeColor = (type: string) => {
     const colors = {
-      spiritual: 'bg-purple-200 text-purple-800',
-      adventure: 'bg-green-200 text-green-800',
-      educational: 'bg-blue-200 text-blue-800',
-      leisure: 'bg-orange-200 text-orange-800',
-      travel: 'bg-indigo-200 text-indigo-800',
-      cultural: 'bg-pink-200 text-pink-800'
+      spiritual: 'bg-purple-200 text-purple-800 border-purple-300',
+      adventure: 'bg-green-200 text-green-800 border-green-300',
+      educational: 'bg-blue-200 text-blue-800 border-blue-300',
+      leisure: 'bg-orange-200 text-orange-800 border-orange-300',
+      travel: 'bg-indigo-200 text-indigo-800 border-indigo-300',
+      cultural: 'bg-pink-200 text-pink-800 border-pink-300'
     };
-    return colors[type as keyof typeof colors] || 'bg-gray-200 text-gray-800';
+    return colors[type as keyof typeof colors] || 'bg-gray-200 text-gray-800 border-gray-300';
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
-    if (eventTitle.toLowerCase().includes('tzfat') || eventTitle.toLowerCase().includes('tzfas')) {
-      return 'bg-purple-100 border-purple-300';
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Multi-day event backgrounds: vibrant green, blue, maroon
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-gradient-to-br from-emerald-200 to-green-300 border-emerald-400';
     }
-    if (eventTitle.toLowerCase().includes('9 days')) {
-      return 'bg-red-100 border-red-300';
+    if (titleLower.includes('shabbos')) {
+      return 'bg-gradient-to-br from-rose-200 to-red-300 border-rose-400';
     }
-    if (eventTitle.toLowerCase().includes('shabbos')) {
-      return 'bg-blue-100 border-blue-300';
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-gradient-to-br from-lime-200 to-green-300 border-lime-400';
     }
-    if (eventTitle.toLowerCase().includes('north overnight') || eventTitle.toLowerCase().includes('yurts')) {
-      return 'bg-green-100 border-green-300';
+    if (titleLower.includes('old city')) {
+      return 'bg-gradient-to-br from-indigo-200 to-blue-300 border-indigo-400';
     }
-    if (eventTitle.toLowerCase().includes('old city')) {
-      return 'bg-amber-100 border-amber-300';
+    if (titleLower.includes('eilat')) {
+      return 'bg-gradient-to-br from-teal-200 to-cyan-300 border-teal-400';
     }
-    if (eventTitle.toLowerCase().includes('eilat')) {
-      return 'bg-cyan-100 border-cyan-300';
-    }
-    if (eventTitle.toLowerCase().includes('off shabbos')) {
-      return 'bg-pink-100 border-pink-300';
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-gradient-to-br from-pink-200 to-rose-300 border-pink-400';
     }
     
+    // Rotate between vibrant colors for other multi-day events
     const colors = [
-      'bg-indigo-100 border-indigo-300',
-      'bg-emerald-100 border-emerald-300',
-      'bg-orange-100 border-orange-300',
-      'bg-rose-100 border-rose-300',
-      'bg-teal-100 border-teal-300',
+      'bg-gradient-to-br from-emerald-200 to-green-300 border-emerald-400',
+      'bg-gradient-to-br from-sky-200 to-blue-300 border-sky-400',
+      'bg-gradient-to-br from-rose-200 to-red-300 border-rose-400',
     ];
     
     const hash = eventTitle.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -103,6 +102,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   const getEventEmoji = (title: string, type: string) => {
     const titleLower = title.toLowerCase();
     
+    // Single, fun and engaging event emojis
     if (titleLower.includes('shabbos')) return '🕯️';
     if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) return '🏔️';
     if (titleLower.includes('wall') || titleLower.includes('kotel')) return '🕊️';
@@ -118,6 +118,66 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
     if (titleLower.includes('tour')) return '🚌';
     if (titleLower.includes('activity')) return '🎯';
+    if (titleLower.includes('masada')) return '🏜️';
+    if (titleLower.includes('dead sea')) return '🌊';
+    if (titleLower.includes('golan')) return '⛰️';
+    if (titleLower.includes('rafting')) return '🛶';
+    if (titleLower.includes('chocolate')) return '🍫';
+    if (titleLower.includes('paintball')) return '🎨';
+    if (titleLower.includes('archery')) return '🏹';
+    if (titleLower.includes('donkey')) return '🦙';
+    if (titleLower.includes('snorkeling')) return '🤿';
+    if (titleLower.includes('scuba')) return '🤿';
+    if (titleLower.includes('glass')) return '🪟';
+    if (titleLower.includes('dig')) return '⛏️';
+    if (titleLower.includes('atv')) return '🏎️';
+    if (titleLower.includes('boat')) return '⛵';
+    if (titleLower.includes('sailing')) return '⛵';
+    if (titleLower.includes('bonfire')) return '🔥';
+    if (titleLower.includes('smores')) return '🍫';
+    if (titleLower.includes('kumzits')) return '🎵';
+    if (titleLower.includes('learning')) return '📖';
+    if (titleLower.includes('shiur')) return '📚';
+    if (titleLower.includes('davening')) return '🙏';
+    if (titleLower.includes('kiddush')) return '🍷';
+    if (titleLower.includes('fabrengen')) return '🎉';
+    if (titleLower.includes('orientation')) return '📋';
+    if (titleLower.includes('welcome')) return '👋';
+    if (titleLower.includes('boys start')) return '🚀';
+    if (titleLower.includes('boys end')) return '🏁';
+    if (titleLower.includes('flight')) return '✈️';
+    if (titleLower.includes('camp day')) return '🏕️';
+    if (titleLower.includes('chill day')) return '😌';
+    if (titleLower.includes('talent show')) return '🎭';
+    if (titleLower.includes('improv')) return '🎪';
+    if (titleLower.includes('dodgeball')) return '⚾';
+    if (titleLower.includes('capture the counselor')) return '🎯';
+    if (titleLower.includes('banana boating')) return '🍌';
+    if (titleLower.includes('fear factor')) return '😱';
+    if (titleLower.includes('stomp')) return '👟';
+    if (titleLower.includes('water sports')) return '🏄';
+    if (titleLower.includes('ice mall')) return '❄️';
+    if (titleLower.includes('dolphins')) return '🐬';
+    if (titleLower.includes('bbq')) return '🍖';
+    if (titleLower.includes('pizza')) return '🍕';
+    if (titleLower.includes('sushi')) return '🍣';
+    if (titleLower.includes('forest walk')) return '🌲';
+    if (titleLower.includes('nap')) return '😴';
+    if (titleLower.includes('natural spring')) return '💧';
+    if (titleLower.includes('cave')) return '🕳️';
+    if (titleLower.includes('haunted house')) return '👻';
+    if (titleLower.includes('blind museum')) return '🕶️';
+    if (titleLower.includes('nova festival')) return '🎪';
+    if (titleLower.includes('memorial')) return '🕊️';
+    if (titleLower.includes('sderot')) return '🏘️';
+    if (titleLower.includes('yad v\'shem')) return '🕯️';
+    if (titleLower.includes('tisha bav')) return '🕊️';
+    if (titleLower.includes('hidden waterfall')) return '🌊';
+    if (titleLower.includes('black canyon')) return '🏔️';
+    if (titleLower.includes('party boat')) return '🎉';
+    if (titleLower.includes('grape harvest')) return '🍇';
+    if (titleLower.includes('red canyon')) return '🏜️';
+    if (titleLower.includes('timna park')) return '🏞️';
     
     switch (type) {
       case 'spiritual': return '🙏';
@@ -147,9 +207,9 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return null;
   };
 
-  // Generate calendar days starting from July 9, 2025 to August 18, 2025
+  // Generate calendar days starting from July 7, 2025 to August 18, 2025
   const generateCalendarDays = () => {
-    const startDate = new Date(2025, 6, 9); // July 9, 2025
+    const startDate = new Date(2025, 6, 7); // July 7, 2025
     const endDate = new Date(2025, 7, 18); // August 18, 2025
     const days = [];
     
@@ -172,26 +232,38 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   const calendarDays = generateCalendarDays();
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-2">
-      <div className="text-center mb-2">
-        <h1 className="text-xl font-bold text-indigo-800 mb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+    <div className="w-full min-h-screen bg-white p-4">
+      {/* Enhanced Header with Logo */}
+      <div className="text-center mb-6 border-b-4 border-blue-600 pb-4">
+        {/* Logo */}
+        <div className="flex justify-center items-center mb-4">
+          <img 
+            src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
+            alt="Camp Sdei Chemed Logo" 
+            className="h-20 w-auto shadow-lg rounded-lg"
+          />
+        </div>
+        <h1 className="text-3xl font-bold text-blue-800 mb-2">
           Camp Sdei Chemed - Boys 2025
         </h1>
-        <p className="text-xs text-indigo-600 font-medium">Summer Itinerary Calendar - July & August</p>
+        <p className="text-lg text-blue-600 font-semibold mb-2">Summer Itinerary Calendar</p>
+        <p className="text-md text-gray-600">July 7 - August 18, 2025</p>
       </div>
 
-      <Card className="overflow-hidden shadow-lg border-2 border-indigo-200">
+      <Card className="overflow-hidden shadow-lg border-2 border-gray-300">
         <CardContent className="p-0">
-          <div className="grid grid-cols-7 bg-gradient-to-r from-indigo-500 to-purple-600 border-b border-indigo-300">
+          {/* Enhanced Header Row */}
+          <div className="grid grid-cols-7 bg-gradient-to-r from-blue-600 to-purple-600 border-b-2 border-blue-700">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-              <div key={day} className={`p-1 text-center text-[8px] font-bold text-white border-r border-indigo-300 last:border-r-0 ${
-                index === 5 ? 'bg-blue-600' : index === 6 ? 'bg-purple-600' : ''
+              <div key={day} className={`p-3 text-center text-sm font-bold text-white border-r border-blue-500 last:border-r-0 ${
+                index === 5 ? 'bg-blue-700' : index === 6 ? 'bg-purple-700' : ''
               }`}>
                 {day}
               </div>
             ))}
           </div>
 
+          {/* Enhanced Calendar Grid */}
           <div className="grid grid-cols-7">
             {calendarDays.map((day, index) => {
               const activities = day ? getActivitiesForDay(day) : [];
@@ -203,54 +275,76 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
               const dayOfWeek = day ? day.getDay() : 0;
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               
+              // Check if this is a "9 days" event - if so, don't apply multi-day background
+              const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
+              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+              
               return (
                 <div
                   key={index}
-                  className={`h-16 p-0.5 border-r border-b border-gray-300 last:border-r-0 flex flex-col text-[3px] ${
-                    day ? (isWeekend ? 'bg-blue-50' : 'bg-white') : 'bg-gray-50'
+                  className={`min-h-[140px] p-3 border-r border-b border-gray-400 last:border-r-0 flex flex-col relative overflow-hidden ${
+                    day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-100'
                   } ${
-                    isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                    shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
                   }`}
                 >
+                  {/* Background pattern overlay */}
+                  {day && primaryEmoji && (
+                    <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-current to-transparent pointer-events-none" />
+                  )}
+                  
                   {day && (
                     <>
-                      <div className={`text-[7px] font-bold mb-0.5 ${
+                      {/* Enhanced Date Display */}
+                      <div className={`text-lg font-bold mb-3 relative z-10 text-center ${
                         isWeekend ? 'text-blue-700' : 'text-gray-800'
                       }`}>
-                        {day.getDate()}
-                        {day.getDate() === 9 && day.getMonth() === 6 && (
-                          <span className="ml-1 text-[5px] text-indigo-600 font-bold">Jul</span>
-                        )}
-                        {day.getDate() === 1 && day.getMonth() === 7 && (
-                          <span className="ml-1 text-[5px] text-indigo-600 font-bold">Aug</span>
-                        )}
+                        <div className="flex items-center justify-center gap-1">
+                          <span>{day.getDate()}</span>
+                          {day.getDate() === 7 && day.getMonth() === 6 && (
+                            <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full">Jul</span>
+                          )}
+                          {day.getDate() === 1 && day.getMonth() === 7 && (
+                            <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full">Aug</span>
+                          )}
+                        </div>
                       </div>
                       
+                      {/* Enhanced Multi-day Events */}
                       {isMultiDay && multiDayEvent && (
-                        <div className="mb-0.5">
-                          <div className="text-[4px] font-semibold text-gray-800 px-0.5 py-0.5 bg-white/70 rounded leading-tight border border-gray-300">
-                            {multiDayEvent.title}
+                        <div className="mb-3 relative z-10">
+                          <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg border shadow-sm text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <span>📍</span>
+                              <span>{multiDayEvent.title}</span>
+                            </div>
                           </div>
                         </div>
                       )}
                       
-                      <div className="space-y-0.5 flex-1 overflow-hidden">
+                      {/* Enhanced Regular Activities */}
+                      <div className="space-y-2 flex-1 relative z-10">
                         {regularActivities.map(activity => (
                           <div
                             key={activity.id}
-                            className={`text-[3px] p-0.5 rounded flex items-center gap-0.5 leading-tight font-medium ${getTypeColor(activity.type)}`}
+                            className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium ${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`}
                           >
-                            {getTypeIcon(activity.type)}
-                            <span className="font-semibold text-[3px] leading-tight">
+                            <span className="text-2xl flex-shrink-0">
+                              {getEventEmoji(activity.title, activity.type)}
+                            </span>
+                            <span className="font-semibold text-xs leading-tight truncate">
                               {activity.title}
                             </span>
                           </div>
                         ))}
                       </div>
                       
-                      {primaryEmoji && (
-                        <div className="mt-auto flex justify-center items-center">
-                          <span className="text-xs">{primaryEmoji}</span>
+                      {/* Activity count indicator */}
+                      {activities.length > 0 && (
+                        <div className="absolute top-2 right-2 z-20">
+                          <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-bold text-gray-700 shadow-sm">
+                            {activities.length}
+                          </div>
                         </div>
                       )}
                     </>

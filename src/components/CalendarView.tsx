@@ -15,7 +15,10 @@ import {
   Plane, 
   Palette,
   Edit3,
-  Download
+  Download,
+  MapPin,
+  Clock,
+  Users
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -38,8 +41,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
 
   // Helper function to normalize dates for comparison
   const normalizeDate = (date: Date) => {
-    // Create a new date object using the year, month, and day components
-    // This ensures we get the local date without timezone issues
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
 
@@ -69,34 +70,33 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const getMultiDayBackgroundColor = (eventTitle: string) => {
-    if (eventTitle.toLowerCase().includes('tzfat') || eventTitle.toLowerCase().includes('tzfas')) {
-      return 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200';
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Multi-day event backgrounds: vibrant green, blue, maroon
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-gradient-to-br from-emerald-200 to-green-300 border-emerald-400';
     }
-    if (eventTitle.toLowerCase().includes('9 days')) {
-      return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200';
+    if (titleLower.includes('shabbos')) {
+      return 'bg-gradient-to-br from-rose-200 to-red-300 border-rose-400';
     }
-    if (eventTitle.toLowerCase().includes('shabbos')) {
-      return 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200';
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-gradient-to-br from-lime-200 to-green-300 border-lime-400';
     }
-    if (eventTitle.toLowerCase().includes('north overnight') || eventTitle.toLowerCase().includes('yurts')) {
-      return 'bg-gradient-to-r from-green-50 to-green-100 border-green-200';
+    if (titleLower.includes('old city')) {
+      return 'bg-gradient-to-br from-indigo-200 to-blue-300 border-indigo-400';
     }
-    if (eventTitle.toLowerCase().includes('old city')) {
-      return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200';
+    if (titleLower.includes('eilat')) {
+      return 'bg-gradient-to-br from-teal-200 to-cyan-300 border-teal-400';
     }
-    if (eventTitle.toLowerCase().includes('eilat')) {
-      return 'bg-gradient-to-r from-cyan-50 to-cyan-100 border-cyan-200';
-    }
-    if (eventTitle.toLowerCase().includes('off shabbos')) {
-      return 'bg-gradient-to-r from-pink-50 to-pink-100 border-pink-200';
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-gradient-to-br from-pink-200 to-rose-300 border-pink-400';
     }
     
+    // Rotate between vibrant colors for other multi-day events
     const colors = [
-      'bg-gradient-to-r from-indigo-50 to-indigo-100 border-indigo-200',
-      'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200',
-      'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200',
-      'bg-gradient-to-r from-rose-50 to-rose-100 border-rose-200',
-      'bg-gradient-to-r from-teal-50 to-teal-100 border-teal-200',
+      'bg-gradient-to-br from-emerald-200 to-green-300 border-emerald-400',
+      'bg-gradient-to-br from-sky-200 to-blue-300 border-sky-400',
+      'bg-gradient-to-br from-rose-200 to-red-300 border-rose-400',
     ];
     
     const hash = eventTitle.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -146,7 +146,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const generateCalendarDays = () => {
-    const startDate = new Date(2025, 6, 9); // July 9, 2025
+    const startDate = new Date(2025, 6, 7); // July 7, 2025 (fixed from July 9)
     const endDate = new Date(2025, 7, 18); // August 18, 2025
     const days = [];
     
@@ -169,7 +169,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   const getEventEmoji = (title: string, type: string) => {
     const titleLower = title.toLowerCase();
     
-    // Specific event emojis
+    // Single, fun and engaging event emojis
     if (titleLower.includes('shabbos')) return '🕯️';
     if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) return '🏔️';
     if (titleLower.includes('wall') || titleLower.includes('kotel')) return '🕊️';
@@ -185,6 +185,66 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
     if (titleLower.includes('tour')) return '🚌';
     if (titleLower.includes('activity')) return '🎯';
+    if (titleLower.includes('masada')) return '🏜️';
+    if (titleLower.includes('dead sea')) return '🌊';
+    if (titleLower.includes('golan')) return '⛰️';
+    if (titleLower.includes('rafting')) return '🛶';
+    if (titleLower.includes('chocolate')) return '🍫';
+    if (titleLower.includes('paintball')) return '🎨';
+    if (titleLower.includes('archery')) return '🏹';
+    if (titleLower.includes('donkey')) return '🦙';
+    if (titleLower.includes('snorkeling')) return '🤿';
+    if (titleLower.includes('scuba')) return '🤿';
+    if (titleLower.includes('glass')) return '🪟';
+    if (titleLower.includes('dig')) return '⛏️';
+    if (titleLower.includes('atv')) return '🏎️';
+    if (titleLower.includes('boat')) return '⛵';
+    if (titleLower.includes('sailing')) return '⛵';
+    if (titleLower.includes('bonfire')) return '🔥';
+    if (titleLower.includes('smores')) return '🍫';
+    if (titleLower.includes('kumzits')) return '🎵';
+    if (titleLower.includes('learning')) return '📖';
+    if (titleLower.includes('shiur')) return '📚';
+    if (titleLower.includes('davening')) return '🙏';
+    if (titleLower.includes('kiddush')) return '🍷';
+    if (titleLower.includes('fabrengen')) return '🎉';
+    if (titleLower.includes('orientation')) return '📋';
+    if (titleLower.includes('welcome')) return '👋';
+    if (titleLower.includes('boys start')) return '🚀';
+    if (titleLower.includes('boys end')) return '🏁';
+    if (titleLower.includes('flight')) return '✈️';
+    if (titleLower.includes('camp day')) return '🏕️';
+    if (titleLower.includes('chill day')) return '😌';
+    if (titleLower.includes('talent show')) return '🎭';
+    if (titleLower.includes('improv')) return '🎪';
+    if (titleLower.includes('dodgeball')) return '⚾';
+    if (titleLower.includes('capture the counselor')) return '🎯';
+    if (titleLower.includes('banana boating')) return '🍌';
+    if (titleLower.includes('fear factor')) return '😱';
+    if (titleLower.includes('stomp')) return '👟';
+    if (titleLower.includes('water sports')) return '🏄';
+    if (titleLower.includes('ice mall')) return '❄️';
+    if (titleLower.includes('dolphins')) return '🐬';
+    if (titleLower.includes('bbq')) return '🍖';
+    if (titleLower.includes('pizza')) return '🍕';
+    if (titleLower.includes('sushi')) return '🍣';
+    if (titleLower.includes('forest walk')) return '🌲';
+    if (titleLower.includes('nap')) return '😴';
+    if (titleLower.includes('natural spring')) return '💧';
+    if (titleLower.includes('cave')) return '🕳️';
+    if (titleLower.includes('haunted house')) return '👻';
+    if (titleLower.includes('blind museum')) return '🕶️';
+    if (titleLower.includes('nova festival')) return '🎪';
+    if (titleLower.includes('memorial')) return '🕊️';
+    if (titleLower.includes('sderot')) return '🏘️';
+    if (titleLower.includes('yad v\'shem')) return '🕯️';
+    if (titleLower.includes('tisha bav')) return '🕊️';
+    if (titleLower.includes('hidden waterfall')) return '🌊';
+    if (titleLower.includes('black canyon')) return '🏔️';
+    if (titleLower.includes('party boat')) return '🎉';
+    if (titleLower.includes('grape harvest')) return '🍇';
+    if (titleLower.includes('red canyon')) return '🏜️';
+    if (titleLower.includes('timna park')) return '🏞️';
     
     // Type-based fallback emojis
     switch (type) {
@@ -239,7 +299,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const generatePDF = () => {
-    window.open('/calendar-pdf', '_blank');
+    window.open('/calendar-pdf', '_self');
   };
 
   const calendarDays = generateCalendarDays();
@@ -251,20 +311,57 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       <div className="flex justify-end mb-4 print:hidden">
         <Button onClick={generatePDF} variant="outline" className="flex items-center gap-2">
           <Download className="w-4 h-4" />
-          Download PDF
+          View PDF
         </Button>
       </div>
 
       <div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Camp Sdei Chemed - Boys 2025 - July & August
-        </h2>
+        <div className="text-center mb-8">
+          {/* Logo */}
+          <div className="flex justify-center items-center mb-4">
+            <img 
+              src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
+              alt="Camp Sdei Chemed Logo" 
+              className="h-20 w-auto shadow-lg rounded-lg"
+            />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-800 mb-2">
+            Camp Sdei Chemed - Boys 2025
+          </h2>
+          <p className="text-lg text-gray-600 mb-4">July & August Adventure Calendar</p>
+          <div className="flex justify-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span>Spiritual</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+              <span>Adventure</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span>Educational</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span>Leisure</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+              <span>Travel</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <span>Cultural</span>
+            </div>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden mb-0">
+        <Card className="overflow-hidden mb-0 shadow-xl border-0">
           <CardContent className="p-0">
-            <div className="grid grid-cols-7 bg-gray-50 border-b">
+            <div className="grid grid-cols-7 bg-gradient-to-r from-gray-100 to-gray-200 border-b">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="p-3 text-center font-semibold text-gray-600 border-r last:border-r-0">
+                <div key={day} className="p-4 text-center font-bold text-gray-700 border-r last:border-r-0 text-lg">
                   {day}
                 </div>
               ))}
@@ -282,38 +379,52 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                 const dayOfWeek = day ? day.getDay() : 0;
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 
+                // Check if this is a "9 days" event - if so, don't apply multi-day background
+                const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
+                const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+                
                 return (
                   <div
                     key={index}
-                    className={`min-h-[180px] p-2 border-r border-b last:border-r-0 flex flex-col ${
-                      day ? (isWeekend ? 'bg-blue-50' : 'bg-white') : 'bg-gray-50'
-                    } ${isToday ? 'bg-blue-100 ring-2 ring-blue-200' : ''} ${
-                      isMultiDay && multiDayEvent ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
-                    }`}
+                    className={`min-h-[200px] p-3 border-r border-b last:border-r-0 flex flex-col relative overflow-hidden ${
+                      day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-50'
+                    } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2' : ''} ${
+                      shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                    } hover:shadow-md transition-all duration-200`}
                   >
+                    {/* Background pattern overlay */}
+                    {day && primaryEmoji && (
+                      <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-current to-transparent pointer-events-none" />
+                    )}
+                    
                     {day && (
                       <>
-                        <div className={`text-sm font-semibold mb-2 ${
-                          isToday ? 'text-blue-600' : isWeekend ? 'text-blue-700' : 'text-gray-700'
+                        <div className={`text-sm font-bold mb-3 relative z-10 ${
+                          isToday ? 'text-blue-700' : isWeekend ? 'text-blue-800' : 'text-gray-800'
                         }`}>
-                          {day.getDate()}
-                          {day.getDate() === 9 && day.getMonth() === 6 && (
-                            <span className="ml-1 text-xs text-indigo-600 font-bold">Jul</span>
-                          )}
-                          {day.getDate() === 1 && day.getMonth() === 7 && (
-                            <span className="ml-1 text-xs text-indigo-600 font-bold">Aug</span>
-                          )}
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg">{day.getDate()}</span>
+                            {day.getDate() === 9 && day.getMonth() === 6 && (
+                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Jul</span>
+                            )}
+                            {day.getDate() === 1 && day.getMonth() === 7 && (
+                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Aug</span>
+                            )}
+                          </div>
                         </div>
                         
                         {isMultiDay && multiDayEvent && (
-                          <div className="mb-2 flex items-center justify-between print:pr-0">
-                            <div className="text-xs font-medium text-gray-800 px-2 py-1 flex-1">
-                              <span>{multiDayEvent.title}</span>
+                          <div className="mb-3 flex items-center justify-between relative z-10">
+                            <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3 text-blue-600" />
+                                <span>{multiDayEvent.title}</span>
+                              </div>
                             </div>
                             <Button 
                               size="sm" 
                               variant="ghost" 
-                              className="h-6 w-6 p-0 print:hidden"
+                              className="h-6 w-6 p-0 print:hidden bg-white/80 backdrop-blur-sm"
                               onClick={() => handleEditClick(multiDayEvent)}
                             >
                               <Edit3 className="w-3 h-3" />
@@ -321,18 +432,21 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                           </div>
                         )}
                         
-                        <div className="space-y-1 flex-1">
+                        <div className="space-y-2 flex-1 relative z-10">
                           {regularActivities.map(activity => (
                             <div
                               key={activity.id}
-                              className="text-xs p-1 rounded flex items-center justify-between group"
+                              className="text-xs p-2 rounded-lg flex items-center justify-between group bg-white/90 backdrop-blur-sm border shadow-sm hover:shadow-md transition-all duration-200"
                             >
-                              <div className="flex items-center gap-1 flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="text-2xl flex-shrink-0">
+                                  {getEventEmoji(activity.title, activity.type)}
+                                </span>
                                 <Badge 
-                                  className={`${getTypeColor(activity.type)} text-xs px-1 py-0.5 flex-1 justify-start gap-1 min-w-0`}
+                                  className={`${getTypeColor(activity.type)} text-xs px-2 py-1 flex-1 justify-start gap-1 min-w-0 font-medium`}
                                 >
                                   {getTypeIcon(activity.type)}
-                                  <span className="text-xs leading-tight">{activity.title}</span>
+                                  <span className="text-xs leading-tight font-semibold">{activity.title}</span>
                                 </Badge>
                               </div>
                               <Button 
@@ -347,9 +461,12 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                           ))}
                         </div>
                         
-                        {primaryEmoji && (
-                          <div className="mt-auto pt-2 flex justify-center items-center flex-1 min-h-[40px]">
-                            <span className="text-4xl md:text-5xl lg:text-6xl">{primaryEmoji}</span>
+                        {/* Activity count indicator */}
+                        {activities.length > 0 && (
+                          <div className="absolute top-2 right-2 z-20">
+                            <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-bold text-gray-700 shadow-sm">
+                              {activities.length}
+                            </div>
                           </div>
                         )}
                       </>
