@@ -44,6 +44,11 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
 
+  // Filter out "9 days" events
+  const filteredItems = items.filter(item => 
+    !item.title.toLowerCase().includes('9 days')
+  );
+
   const getTypeColor = (type: string) => {
     const colors = {
       spiritual: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -106,30 +111,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   const getActivitiesForDay = (targetDate: Date) => {
     const normalizedTargetDate = normalizeDate(targetDate);
     
-    // Debug logging for July 10th
-    if (targetDate.getDate() === 10 && targetDate.getMonth() === 6) {
-      console.log('=== DEBUGGING JULY 10TH ===');
-      console.log('Target date:', targetDate);
-      console.log('Normalized target date:', normalizedTargetDate);
-      console.log('All items count:', items.length);
-      
-      // Check all July 10th items
-      const july10Items = items.filter(item => {
-        const itemDate = new Date(item.fullDate);
-        return itemDate.getDate() === 10 && itemDate.getMonth() === 6 && itemDate.getFullYear() === 2025;
-      });
-      console.log('July 10th items found:', july10Items);
-      
-      items.forEach(item => {
-        const itemStartDate = normalizeDate(item.fullDate);
-        const matches = itemStartDate.getTime() === normalizedTargetDate.getTime();
-        if (item.fullDate.getDate() === 10 && item.fullDate.getMonth() === 6) {
-          console.log('Item:', item.title, 'Date:', item.fullDate, 'Normalized:', itemStartDate, 'Matches:', matches);
-        }
-      });
-    }
-    
-    return items.filter(item => {
+    return filteredItems.filter(item => {
       const itemStartDate = normalizeDate(item.fullDate);
       
       // For single-day events, check exact date match
@@ -145,8 +127,16 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     });
   };
 
+  // Helper function to check if a day is the start of a multi-day event
+  const isMultiDayEventStart = (targetDate: Date, event: ItineraryItem) => {
+    if (!event.isMultiDay || !event.endDate) return false;
+    const normalizedTargetDate = normalizeDate(targetDate);
+    const itemStartDate = normalizeDate(event.fullDate);
+    return normalizedTargetDate.getTime() === itemStartDate.getTime();
+  };
+
   const generateCalendarDays = () => {
-    const startDate = new Date(2025, 6, 7); // July 7, 2025 (fixed from July 9)
+    const startDate = new Date(2025, 6, 7); // July 7, 2025
     const endDate = new Date(2025, 7, 18); // August 18, 2025
     const days = [];
     
@@ -179,7 +169,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     if (titleLower.includes('hike') || titleLower.includes('hiking')) return '🥾';
     if (titleLower.includes('yurts') || titleLower.includes('overnight')) return '⛺';
     if (titleLower.includes('old city')) return '🏰';
-    if (titleLower.includes('9 days')) return '🕊️';
     if (titleLower.includes('flight') || titleLower.includes('travel')) return '✈️';
     if (titleLower.includes('pool') || titleLower.includes('swim')) return '🏊';
     if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
@@ -379,9 +368,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                 const dayOfWeek = day ? day.getDay() : 0;
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 
-                // Check if this is a "9 days" event - if so, don't apply multi-day background
-                const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
-                const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+                const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent;
                 
                 return (
                   <div
@@ -404,7 +391,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                         }`}>
                           <div className="flex items-center justify-between">
                             <span className="text-lg">{day.getDate()}</span>
-                            {day.getDate() === 9 && day.getMonth() === 6 && (
+                            {day.getDate() === 7 && day.getMonth() === 6 && (
                               <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Jul</span>
                             )}
                             {day.getDate() === 1 && day.getMonth() === 7 && (
@@ -413,7 +400,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                           </div>
                         </div>
                         
-                        {isMultiDay && multiDayEvent && (
+                        {/* Multi-day events - only show on the first day */}
+                        {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
                           <div className="mb-3 flex items-center justify-between relative z-10">
                             <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1">
                               <div className="flex items-center gap-1">
@@ -446,7 +434,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                   className={`${getTypeColor(activity.type)} text-xs px-2 py-1 flex-1 justify-start gap-1 min-w-0 font-medium`}
                                 >
                                   {getTypeIcon(activity.type)}
-                                  <span className="text-xs leading-tight font-semibold">{activity.title}</span>
+                                  <span className="text-xs leading-tight font-semibold truncate">{activity.title}</span>
                                 </Badge>
                               </div>
                               <Button 

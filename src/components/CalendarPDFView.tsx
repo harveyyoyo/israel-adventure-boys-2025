@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
@@ -20,6 +21,11 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     // This ensures we get the local date without timezone issues
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
+
+  // Filter out "9 days" events
+  const filteredItems = items.filter(item => 
+    !item.title.toLowerCase().includes('9 days')
+  );
 
   const getTypeIcon = (type: string) => {
     const icons = {
@@ -83,7 +89,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
   const getActivitiesForDay = (targetDate: Date) => {
     const normalizedTargetDate = normalizeDate(targetDate);
     
-    return items.filter(item => {
+    return filteredItems.filter(item => {
       const itemStartDate = normalizeDate(item.fullDate);
       
       // For single-day events, check exact date match
@@ -99,6 +105,14 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     });
   };
 
+  // Helper function to check if a day is the start of a multi-day event
+  const isMultiDayEventStart = (targetDate: Date, event: ItineraryItem) => {
+    if (!event.isMultiDay || !event.endDate) return false;
+    const normalizedTargetDate = normalizeDate(targetDate);
+    const itemStartDate = normalizeDate(event.fullDate);
+    return normalizedTargetDate.getTime() === itemStartDate.getTime();
+  };
+
   const getEventEmoji = (title: string, type: string) => {
     const titleLower = title.toLowerCase();
     
@@ -112,7 +126,6 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     if (titleLower.includes('hike') || titleLower.includes('hiking')) return '🥾';
     if (titleLower.includes('yurts') || titleLower.includes('overnight')) return '⛺';
     if (titleLower.includes('old city')) return '🏰';
-    if (titleLower.includes('9 days')) return '🕊️';
     if (titleLower.includes('flight') || titleLower.includes('travel')) return '✈️';
     if (titleLower.includes('pool') || titleLower.includes('swim')) return '🏊';
     if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
@@ -275,9 +288,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
               const dayOfWeek = day ? day.getDay() : 0;
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               
-              // Check if this is a "9 days" event - if so, don't apply multi-day background
-              const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
-              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent;
               
               return (
                 <div
@@ -310,8 +321,8 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         </div>
                       </div>
                       
-                      {/* Enhanced Multi-day Events */}
-                      {isMultiDay && multiDayEvent && (
+                      {/* Enhanced Multi-day Events - only show on the first day */}
+                      {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
                         <div className="mb-3 relative z-10">
                           <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg border shadow-sm text-center">
                             <div className="flex items-center justify-center gap-1">
