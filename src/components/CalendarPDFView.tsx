@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent } from '@/components/ui/card';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
@@ -321,8 +322,8 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         </div>
                       </div>
                       
-                      {/* Enhanced Multi-day Events - only show on the first day */}
-                      {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
+                      {/* Enhanced Multi-day Events - show on ALL days they span */}
+                      {isMultiDay && multiDayEvent && (
                         <div className="mb-3 relative z-10">
                           <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg border shadow-sm text-center">
                             <div className="flex items-center justify-center gap-1">

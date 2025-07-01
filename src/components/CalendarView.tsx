@@ -127,14 +127,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     });
   };
 
-  // Helper function to check if a day is the start of a multi-day event
-  const isMultiDayEventStart = (targetDate: Date, event: ItineraryItem) => {
-    if (!event.isMultiDay || !event.endDate) return false;
-    const normalizedTargetDate = normalizeDate(targetDate);
-    const itemStartDate = normalizeDate(event.fullDate);
-    return normalizedTargetDate.getTime() === itemStartDate.getTime();
-  };
-
   const generateCalendarDays = () => {
     const startDate = new Date(2025, 6, 7); // July 7, 2025
     const endDate = new Date(2025, 7, 18); // August 18, 2025
@@ -400,8 +392,8 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                           </div>
                         </div>
                         
-                        {/* Multi-day events - only show on the first day */}
-                        {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
+                        {/* Multi-day events - show on ALL days they span */}
+                        {isMultiDay && multiDayEvent && (
                           <div className="mb-3 flex items-center justify-between relative z-10">
                             <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1">
                               <div className="flex items-center gap-1">
