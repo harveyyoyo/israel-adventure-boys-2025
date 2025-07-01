@@ -1,5 +1,3 @@
-
-
 import { Card, CardContent } from '@/components/ui/card';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
@@ -8,7 +6,8 @@ import {
   GraduationCap, 
   Coffee, 
   Plane, 
-  Palette
+  Palette,
+  MapPin
 } from 'lucide-react';
 
 interface CalendarPDFViewProps {
@@ -278,7 +277,7 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
           </div>
 
           {/* Enhanced Calendar Grid */}
-          <div className="grid grid-cols-7">
+          <div className="grid grid-cols-7 relative">
             {calendarDays.map((day, index) => {
               const activities = day ? getActivitiesForDay(day) : [];
               const isMultiDay = activities.some(activity => activity.isMultiDay);
@@ -322,20 +321,23 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         </div>
                       </div>
                       
-                      {/* Enhanced Multi-day Events - show on ALL days they span */}
-                      {isMultiDay && multiDayEvent && (
-                        <div className="mb-3 relative z-10">
-                          <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg border shadow-sm text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <span>📍</span>
+                      {/* Multi-day Events - show spanning banner only on start day */}
+                      {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
+                        <div className="absolute top-8 left-0 right-0 z-30 flex items-center justify-center">
+                          <div className="text-xs font-bold text-white px-3 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 rounded-full shadow-lg border border-white">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-2 h-2" />
                               <span>{multiDayEvent.title}</span>
+                              <span className="text-xs opacity-75">
+                                ({multiDayEvent.fullDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {multiDayEvent.endDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                              </span>
                             </div>
                           </div>
                         </div>
                       )}
                       
                       {/* Enhanced Regular Activities */}
-                      <div className="space-y-2 flex-1 relative z-10">
+                      <div className="space-y-2 flex-1 relative z-10 mt-6">
                         {regularActivities.map(activity => (
                           <div
                             key={activity.id}

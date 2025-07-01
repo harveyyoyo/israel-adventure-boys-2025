@@ -127,6 +127,22 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     });
   };
 
+  // Helper function to check if a day is the start of a multi-day event
+  const isMultiDayEventStart = (targetDate: Date, event: ItineraryItem) => {
+    if (!event.isMultiDay || !event.endDate) return false;
+    const normalizedTargetDate = normalizeDate(targetDate);
+    const itemStartDate = normalizeDate(event.fullDate);
+    return normalizedTargetDate.getTime() === itemStartDate.getTime();
+  };
+
+  // Helper function to check if a day is the end of a multi-day event
+  const isMultiDayEventEnd = (targetDate: Date, event: ItineraryItem) => {
+    if (!event.isMultiDay || !event.endDate) return false;
+    const normalizedTargetDate = normalizeDate(targetDate);
+    const itemEndDate = normalizeDate(event.endDate);
+    return normalizedTargetDate.getTime() === itemEndDate.getTime();
+  };
+
   const generateCalendarDays = () => {
     const startDate = new Date(2025, 6, 7); // July 7, 2025
     const endDate = new Date(2025, 7, 18); // August 18, 2025
@@ -348,7 +364,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
               ))}
             </div>
 
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-7 relative">
               {calendarDays.map((day, index) => {
                 const activities = day ? getActivitiesForDay(day) : [];
                 const isToday = day && normalizeDate(day).getTime() === normalizedToday.getTime();
@@ -392,27 +408,22 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                           </div>
                         </div>
                         
-                        {/* Multi-day events - show on ALL days they span */}
-                        {isMultiDay && multiDayEvent && (
-                          <div className="mb-3 flex items-center justify-between relative z-10">
-                            <div className="text-xs font-semibold text-gray-900 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm flex-1">
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3 text-blue-600" />
+                        {/* Multi-day events - show spanning banner only on start day */}
+                        {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
+                          <div className="absolute top-12 left-0 right-0 z-30 flex items-center justify-center">
+                            <div className="text-xs font-bold text-white px-4 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full shadow-lg border-2 border-white backdrop-blur-sm animate-pulse">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-3 h-3" />
                                 <span>{multiDayEvent.title}</span>
+                                <span className="text-xs opacity-75">
+                                  ({multiDayEvent.fullDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {multiDayEvent.endDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                                </span>
                               </div>
                             </div>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-6 w-6 p-0 print:hidden bg-white/80 backdrop-blur-sm"
-                              onClick={() => handleEditClick(multiDayEvent)}
-                            >
-                              <Edit3 className="w-3 h-3" />
-                            </Button>
                           </div>
                         )}
                         
-                        <div className="space-y-2 flex-1 relative z-10">
+                        <div className="space-y-2 flex-1 relative z-10 mt-8">
                           {regularActivities.map(activity => (
                             <div
                               key={activity.id}
