@@ -411,7 +411,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                         {/* Multi-day events - show spanning banner only on start day */}
                         {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
                           <div className="absolute top-12 left-0 right-0 z-30 flex items-center justify-center">
-                            <div className="text-xs font-bold text-white px-4 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full shadow-lg border-2 border-white backdrop-blur-sm animate-pulse">
+                            <div className="text-xs font-bold text-white px-4 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full shadow-lg border-2 border-white backdrop-blur-sm">
                               <div className="flex items-center gap-2">
                                 <MapPin className="w-3 h-3" />
                                 <span>{multiDayEvent.title}</span>
