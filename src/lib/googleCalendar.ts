@@ -109,26 +109,30 @@ export class GoogleCalendarService {
     let startDate: Date;
     let endDate: Date;
     
+    console.log(`Processing event: ${event.summary}`);
+    console.log(`Original start: ${event.start.dateTime || event.start.date}`);
+    console.log(`Original end: ${event.end.dateTime || event.end.date}`);
+    
     if (event.start.dateTime) {
-      // For events with specific time, parse the ISO string and convert to local time
-      const utcDate = new Date(event.start.dateTime);
-      // Convert UTC to local time by adjusting for timezone offset
-      const localOffset = new Date().getTimezoneOffset() * 60000; // in milliseconds
-      startDate = new Date(utcDate.getTime() - localOffset);
+      // For events with specific time, Google Calendar returns UTC time
+      // We need to convert it to the user's local timezone
+      startDate = new Date(event.start.dateTime);
+      // The Date constructor automatically converts UTC to local time
     } else {
-      // For all-day events, use the date directly (these are already in local time)
-      startDate = new Date(event.start.date! + 'T00:00:00');
+      // For all-day events, Google Calendar returns dates in the calendar's timezone
+      // We need to create a date in the user's local timezone
+      const [year, month, day] = event.start.date!.split('-').map(Number);
+      startDate = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
     }
     
     if (event.end.dateTime) {
-      // For events with specific time, parse the ISO string and convert to local time
-      const utcDate = new Date(event.end.dateTime);
-      // Convert UTC to local time by adjusting for timezone offset
-      const localOffset = new Date().getTimezoneOffset() * 60000; // in milliseconds
-      endDate = new Date(utcDate.getTime() - localOffset);
+      // For events with specific time, Google Calendar returns UTC time
+      endDate = new Date(event.end.dateTime);
+      // The Date constructor automatically converts UTC to local time
     } else {
-      // For all-day events, use the date directly (these are already in local time)
-      endDate = new Date(event.end.date! + 'T00:00:00');
+      // For all-day events, Google Calendar returns dates in the calendar's timezone
+      const [year, month, day] = event.end.date!.split('-').map(Number);
+      endDate = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
     }
     
     // Check if it's a multi-day event
@@ -138,17 +142,21 @@ export class GoogleCalendarService {
     const activityType = event.colorId ? colorToTypeMap[event.colorId] || DEFAULT_TYPE : DEFAULT_TYPE;
     
     console.log(`Converting event: ${event.summary} (color: ${event.colorId}, type: ${activityType})`);
-    console.log(`Original start: ${event.start.dateTime || event.start.date}`);
     console.log(`Converted start: ${startDate.toISOString()}, End: ${endDate.toISOString()}`);
+    console.log(`Local start date: ${startDate.toLocaleDateString()}, Local end date: ${endDate.toLocaleDateString()}`);
+    console.log(`Is multi-day: ${isMultiDay}`);
+    
+    // Create a normalized date for comparison (just the date part, no time)
+    const normalizedStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     
     return {
       id: event.id,
       title: event.summary,
       date: this.formatDate(startDate),
-      fullDate: startDate,
+      fullDate: normalizedStartDate, // Use normalized date to avoid timezone issues
       type: activityType,
       isMultiDay: isMultiDay,
-      endDate: isMultiDay ? endDate : undefined
+      endDate: isMultiDay ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()) : undefined
     };
   }
 
