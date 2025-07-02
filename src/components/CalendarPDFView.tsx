@@ -223,38 +223,6 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                     shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
                   }`}
                 >
-                  {/* Multi-day event overlay indicators */}
-                  {isMultiDay && multiDayEvent && day && (
-                    <>
-                      {/* Left border for start of multi-day event */}
-                      {isMultiDayEventStart(day, multiDayEvent) && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600 to-purple-600 z-20"></div>
-                      )}
-                      
-                      {/* Right border for end of multi-day event */}
-                      {isMultiDayEventEnd(day, multiDayEvent) && (
-                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-600 to-blue-600 z-20"></div>
-                      )}
-                      
-                      {/* Top border for continuation */}
-                      {!isMultiDayEventStart(day, multiDayEvent) && !isMultiDayEventEnd(day, multiDayEvent) && (
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 z-20"></div>
-                      )}
-                      
-                      {/* Multi-day event banner on start day */}
-                      {isMultiDayEventStart(day, multiDayEvent) && (
-                        <div className="absolute top-2 left-2 right-2 z-30">
-                          <div className="text-xs font-bold text-white px-3 py-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full shadow-lg border border-white">
-                            <div className="flex items-center gap-1 justify-center">
-                              <MapPin className="w-3 h-3" />
-                              <span className="truncate">{multiDayEvent.title}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
                   {day && (
                     <>
                       {/* Enhanced Date Display */}
@@ -272,9 +240,9 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                         </div>
                       </div>
                       
-                      {/* Enhanced Regular Activities */}
-                      <div className="space-y-2 flex-1 relative z-10 mt-6">
-                        {regularActivities.map(activity => (
+                      {/* Enhanced Activities */}
+                      <div className="space-y-2 flex-1 relative z-10">
+                        {activities.map(activity => (
                           <div
                             key={activity.id}
                             className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium ${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`}
