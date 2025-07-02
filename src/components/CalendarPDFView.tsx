@@ -88,6 +88,60 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return colors[hash % colors.length];
   };
 
+  const getMultiDayInvertedColors = (eventTitle: string) => {
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Inverted colors for multi-day events based on their background
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-emerald-800 text-white border-emerald-600';
+    }
+    if (titleLower.includes('shabbos')) {
+      return 'bg-rose-800 text-white border-rose-600';
+    }
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-lime-800 text-white border-lime-600';
+    }
+    if (titleLower.includes('old city')) {
+      return 'bg-indigo-800 text-white border-indigo-600';
+    }
+    if (titleLower.includes('eilat')) {
+      return 'bg-teal-800 text-white border-teal-600';
+    }
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-pink-800 text-white border-pink-600';
+    }
+    
+    // Default inverted colors for other multi-day events
+    return 'bg-gray-800 text-white border-gray-600';
+  };
+
+  const getMultiDayBadgeColors = (eventTitle: string) => {
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Inverted badge colors for multi-day events
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-emerald-700 text-white border-emerald-500';
+    }
+    if (titleLower.includes('shabbos')) {
+      return 'bg-rose-700 text-white border-rose-500';
+    }
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-lime-700 text-white border-lime-500';
+    }
+    if (titleLower.includes('old city')) {
+      return 'bg-indigo-700 text-white border-indigo-500';
+    }
+    if (titleLower.includes('eilat')) {
+      return 'bg-teal-700 text-white border-teal-500';
+    }
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-pink-700 text-white border-pink-500';
+    }
+    
+    // Default inverted badge colors
+    return 'bg-gray-700 text-white border-gray-500';
+  };
+
   const getActivitiesForDay = (targetDate: Date) => {
     const normalizedTargetDate = normalizeDate(targetDate);
     
@@ -242,10 +296,21 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                       
                       {/* Enhanced Activities */}
                       <div className="space-y-2 flex-1 relative z-10">
-                        {activities.map(activity => (
+                        {activities
+                          .sort((a, b) => {
+                            // Multi-day events first, then by type
+                            if (a.isMultiDay && !b.isMultiDay) return -1;
+                            if (!a.isMultiDay && b.isMultiDay) return 1;
+                            return 0;
+                          })
+                          .map(activity => (
                           <div
                             key={activity.id}
-                            className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium ${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`}
+                            className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium ${
+                              activity.isMultiDay 
+                                ? getMultiDayInvertedColors(activity.title)
+                                : `${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`
+                            }`}
                           >
                             <span className="text-2xl flex-shrink-0">
                               {getEventEmoji(activity.title, activity.type)}
@@ -256,15 +321,6 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                           </div>
                         ))}
                       </div>
-                      
-                      {/* Activity count indicator */}
-                      {activities.length > 0 && (
-                        <div className="absolute top-2 right-2 z-20">
-                          <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-bold text-gray-700 shadow-sm">
-                            {activities.length}
-                          </div>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>

@@ -105,7 +105,7 @@ export class GoogleCalendarService {
   }
 
   private convertEventToItineraryItem(event: GoogleCalendarEvent): ItineraryItem {
-    // Handle timezone conversion properly
+    // Simple date parsing - assume all dates are in the calendar's timezone
     let startDate: Date;
     let endDate: Date;
     
@@ -114,25 +114,21 @@ export class GoogleCalendarService {
     console.log(`Original end: ${event.end.dateTime || event.end.date}`);
     
     if (event.start.dateTime) {
-      // For events with specific time, Google Calendar returns UTC time
-      // We need to convert it to the user's local timezone
+      // For events with specific time, use the time as-is
       startDate = new Date(event.start.dateTime);
-      // The Date constructor automatically converts UTC to local time
     } else {
-      // For all-day events, Google Calendar returns dates in the calendar's timezone
-      // We need to create a date in the user's local timezone
+      // For all-day events, parse the date string directly
       const [year, month, day] = event.start.date!.split('-').map(Number);
-      startDate = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+      startDate = new Date(year, month - 1, day); // month is 0-indexed
     }
     
     if (event.end.dateTime) {
-      // For events with specific time, Google Calendar returns UTC time
+      // For events with specific time, use the time as-is
       endDate = new Date(event.end.dateTime);
-      // The Date constructor automatically converts UTC to local time
     } else {
-      // For all-day events, Google Calendar returns dates in the calendar's timezone
+      // For all-day events, parse the date string directly
       const [year, month, day] = event.end.date!.split('-').map(Number);
-      endDate = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+      endDate = new Date(year, month - 1, day); // month is 0-indexed
     }
     
     // Check if it's a multi-day event
@@ -150,6 +146,13 @@ export class GoogleCalendarService {
     const normalizedStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     const normalizedEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
     
+    // For multi-day events, adjust the end date since Google Calendar end dates are exclusive
+    let adjustedEndDate: Date | undefined;
+    if (isMultiDay) {
+      adjustedEndDate = new Date(normalizedEndDate);
+      adjustedEndDate.setDate(adjustedEndDate.getDate() - 1); // Subtract one day
+    }
+    
     // For debugging, log the specific dates for "North Overnight" events
     if (event.summary.toLowerCase().includes('north overnight')) {
       console.log(`NORTH OVERNIGHT DEBUG:`);
@@ -157,6 +160,7 @@ export class GoogleCalendarService {
       console.log(`  Original end date string: ${event.end.date}`);
       console.log(`  Parsed start date: ${normalizedStartDate.toLocaleDateString()}`);
       console.log(`  Parsed end date: ${normalizedEndDate.toLocaleDateString()}`);
+      console.log(`  Adjusted end date: ${adjustedEndDate?.toLocaleDateString()}`);
       console.log(`  Start date parts: ${event.start.date?.split('-').join(', ')}`);
       console.log(`  End date parts: ${event.end.date?.split('-').join(', ')}`);
     }
@@ -168,16 +172,24 @@ export class GoogleCalendarService {
       fullDate: normalizedStartDate, // Use normalized date to avoid timezone issues
       type: activityType,
       isMultiDay: isMultiDay,
-      endDate: isMultiDay ? normalizedEndDate : undefined
+      endDate: adjustedEndDate
     };
   }
 
   private isMultiDayEvent(startDate: Date, endDate: Date): boolean {
     const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    
+    // Google Calendar end dates are exclusive (day after the event ends)
+    // So we need to subtract one day to get the actual end date
+    endDay.setDate(endDay.getDate() - 1);
+    
     const diffTime = endDay.getTime() - startDay.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 1;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    
+    console.log(`Multi-day calculation: start=${startDay.toLocaleDateString()}, end=${endDay.toLocaleDateString()}, diffDays=${diffDays}`);
+    
+    return diffDays > 0; // More than 0 days difference means multi-day
   }
 
   private formatDate(date: Date): string {

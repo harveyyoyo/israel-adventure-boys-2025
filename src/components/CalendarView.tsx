@@ -111,6 +111,60 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     return colors[hash % colors.length];
   };
 
+  const getMultiDayInvertedColors = (eventTitle: string) => {
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Inverted colors for multi-day events based on their background
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-emerald-800 text-white border-emerald-600';
+    }
+    if (titleLower.includes('shabbos')) {
+      return 'bg-rose-800 text-white border-rose-600';
+    }
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-lime-800 text-white border-lime-600';
+    }
+    if (titleLower.includes('old city')) {
+      return 'bg-indigo-800 text-white border-indigo-600';
+    }
+    if (titleLower.includes('eilat')) {
+      return 'bg-teal-800 text-white border-teal-600';
+    }
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-pink-800 text-white border-pink-600';
+    }
+    
+    // Default inverted colors for other multi-day events
+    return 'bg-gray-800 text-white border-gray-600';
+  };
+
+  const getMultiDayBadgeColors = (eventTitle: string) => {
+    const titleLower = eventTitle.toLowerCase();
+    
+    // Inverted badge colors for multi-day events
+    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) {
+      return 'bg-emerald-700 text-white border-emerald-500';
+    }
+    if (titleLower.includes('shabbos')) {
+      return 'bg-rose-700 text-white border-rose-500';
+    }
+    if (titleLower.includes('north overnight') || titleLower.includes('yurts')) {
+      return 'bg-lime-700 text-white border-lime-500';
+    }
+    if (titleLower.includes('old city')) {
+      return 'bg-indigo-700 text-white border-indigo-500';
+    }
+    if (titleLower.includes('eilat')) {
+      return 'bg-teal-700 text-white border-teal-500';
+    }
+    if (titleLower.includes('off shabbos')) {
+      return 'bg-pink-700 text-white border-pink-500';
+    }
+    
+    // Default inverted badge colors
+    return 'bg-gray-700 text-white border-gray-500';
+  };
+
   const getActivitiesForDay = (targetDate: Date) => {
     const normalizedTargetDate = normalizeDate(targetDate);
     
@@ -187,7 +241,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   };
 
   const generatePDF = () => {
-    window.open('/calendar-pdf', '_self');
+    window.print();
   };
 
   const calendarDays = generateCalendarDays();
@@ -195,66 +249,46 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   const normalizedToday = normalizeDate(today);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-0">
-      <div className="flex justify-end mb-4 print:hidden">
+    <div className="w-full">
+      <div className="flex justify-end mb-4 print:hidden px-6">
         <Button onClick={generatePDF} variant="outline" className="flex items-center gap-2">
           <Download className="w-4 h-4" />
-          View PDF
+          Print Calendar
         </Button>
       </div>
 
-      <div>
-        <div className="text-center mb-8">
+      <div className="w-full min-h-screen bg-white p-4 print:p-0 print:min-h-0">
+        {/* Enhanced Header with Logo */}
+        <div className="text-center mb-6 border-b-4 border-blue-600 pb-4 print:mb-4 print:pb-2">
           {/* Logo */}
-          <div className="flex justify-center items-center mb-4">
+          <div className="flex justify-center items-center mb-4 print:mb-2">
             <img 
               src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
               alt="Camp Sdei Chemed Logo" 
-              className="h-20 w-auto shadow-lg rounded-lg"
+              className="h-20 w-auto shadow-lg rounded-lg print:h-16"
             />
           </div>
-          <h2 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-blue-800 mb-2 print:text-2xl print:mb-1">
             Camp Sdei Chemed - Boys 2025
-          </h2>
-          <p className="text-lg text-gray-600 mb-4">July & August Adventure Calendar</p>
-          <div className="flex justify-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span>Spiritual</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span>Adventure</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>Educational</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span>Leisure</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-              <span>Travel</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-              <span>Cultural</span>
-            </div>
-          </div>
+          </h1>
+          <p className="text-lg text-blue-600 font-semibold mb-2 print:text-base print:mb-1">Summer Itinerary Calendar</p>
+          <p className="text-md text-gray-600 print:text-sm">July 7 - August 18, 2025</p>
         </div>
 
-        <Card className="overflow-hidden mb-0 shadow-xl border-0">
+        <Card className="overflow-hidden shadow-lg border-2 border-gray-300 print:shadow-none print:border print:border-gray-400">
           <CardContent className="p-0">
-            <div className="grid grid-cols-7 bg-gradient-to-r from-gray-100 to-gray-200 border-b">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="p-4 text-center font-bold text-gray-700 border-r last:border-r-0 text-lg">
+            {/* Enhanced Header Row */}
+            <div className="grid grid-cols-7 bg-gradient-to-r from-blue-600 to-purple-600 border-b-2 border-blue-700 print:bg-blue-600">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                <div key={day} className={`p-3 text-center text-sm font-bold text-white border-r border-blue-500 last:border-r-0 print:p-2 print:text-xs ${
+                  index === 5 ? 'bg-blue-700' : index === 6 ? 'bg-purple-700' : ''
+                }`}>
                   {day}
                 </div>
               ))}
             </div>
 
+            {/* Enhanced Calendar Grid */}
             <div className="grid grid-cols-7 relative">
               {calendarDays.map((day, index) => {
                 const activities = day ? getActivitiesForDay(day) : [];
@@ -274,57 +308,56 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                 return (
                   <div
                     key={index}
-                    className={`min-h-[200px] p-3 border-r border-b last:border-r-0 flex flex-col relative overflow-hidden ${
-                      day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-50'
-                    } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2' : ''} ${
+                    className={`min-h-[140px] p-3 border-r border-b border-gray-400 last:border-r-0 flex flex-col relative overflow-hidden print:min-h-[120px] print:p-2 ${
+                      day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-100'
+                    } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2 print:ring-1 print:ring-blue-600' : ''} ${
                       shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
-                    } hover:shadow-md transition-all duration-200`}
+                    }`}
                   >
                     {day && (
                       <>
-                        <div className={`text-sm font-bold mb-3 relative z-10 ${
-                          isToday ? 'text-blue-700' : isWeekend ? 'text-blue-800' : 'text-gray-800'
+                        {/* Enhanced Date Display */}
+                        <div className={`text-lg font-bold mb-3 relative z-10 text-center print:text-base print:mb-2 ${
+                          isToday ? 'text-blue-700' : isWeekend ? 'text-blue-700' : 'text-gray-800'
                         }`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg">{day.getDate()}</span>
+                          <div className="flex items-center justify-center gap-1">
+                            <span>{day.getDate()}</span>
                             {day.getDate() === 7 && day.getMonth() === 6 && (
-                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Jul</span>
+                              <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Jul</span>
                             )}
                             {day.getDate() === 1 && day.getMonth() === 7 && (
-                              <span className="text-xs text-indigo-600 font-bold bg-indigo-100 px-2 py-1 rounded-full">Aug</span>
+                              <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Aug</span>
                             )}
                           </div>
                         </div>
                         
-                        <div className="space-y-2 flex-1 relative z-10">
-                          {activities.map(activity => (
+                        {/* Enhanced Activities */}
+                        <div className="space-y-2 flex-1 relative z-10 print:space-y-1">
+                          {activities
+                            .sort((a, b) => {
+                              // Multi-day events first, then by type
+                              if (a.isMultiDay && !b.isMultiDay) return -1;
+                              if (!a.isMultiDay && b.isMultiDay) return 1;
+                              return 0;
+                            })
+                            .map(activity => (
                             <div
                               key={activity.id}
-                              className="text-xs p-2 rounded-lg flex items-center justify-between group bg-white/90 backdrop-blur-sm border shadow-sm hover:shadow-md transition-all duration-200"
+                              className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium print:p-1 print:text-xs ${
+                                activity.isMultiDay 
+                                  ? getMultiDayInvertedColors(activity.title)
+                                  : `${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`
+                              }`}
                             >
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-2xl flex-shrink-0">
-                                  {getEventEmoji(activity.title, activity.type)}
-                                </span>
-                                <Badge 
-                                  className={`${getTypeColor(activity.type)} text-xs px-2 py-1 flex-1 justify-start gap-1 min-w-0 font-medium`}
-                                >
-                                  {getTypeIcon(activity.type)}
-                                  <span className="text-xs leading-tight font-semibold truncate">{activity.title}</span>
-                                </Badge>
-                              </div>
+                              <span className="text-2xl flex-shrink-0 print:text-lg">
+                                {getEventEmoji(activity.title, activity.type)}
+                              </span>
+                              <span className="font-semibold text-xs leading-tight truncate print:text-xs">
+                                {activity.title}
+                              </span>
                             </div>
                           ))}
                         </div>
-                        
-                        {/* Activity count indicator */}
-                        {activities.length > 0 && (
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-bold text-gray-700 shadow-sm">
-                              {activities.length}
-                            </div>
-                          </div>
-                        )}
                       </>
                     )}
                   </div>
