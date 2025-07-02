@@ -28,13 +28,6 @@ interface CalendarViewProps {
 }
 
 export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
-  const [editingItem, setEditingItem] = useState<ItineraryItem | null>(null);
-  const [editForm, setEditForm] = useState({
-    title: '',
-    date: '',
-    type: 'leisure' as ItineraryItem['type']
-  });
-
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -191,27 +184,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
     }
     
     return null;
-  };
-
-  const handleEditClick = (item: ItineraryItem) => {
-    setEditingItem(item);
-    setEditForm({
-      title: item.title,
-      date: item.date,
-      type: item.type
-    });
-  };
-
-  const handleSaveEdit = () => {
-    if (!editingItem) return;
-    
-    const updatedItem = {
-      ...editForm,
-      fullDate: new Date(editForm.date)
-    };
-    
-    onUpdateItem(editingItem.id, updatedItem);
-    setEditingItem(null);
   };
 
   const generatePDF = () => {
@@ -373,14 +345,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
                                   <span className="text-xs leading-tight font-semibold truncate">{activity.title}</span>
                                 </Badge>
                               </div>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0 print:hidden"
-                                onClick={() => handleEditClick(activity)}
-                              >
-                                <Edit3 className="w-2 h-2" />
-                              </Button>
                             </div>
                           ))}
                         </div>
@@ -402,59 +366,6 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
           </CardContent>
         </Card>
       </div>
-      
-      {/* Edit Dialog */}
-      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent className="print:hidden">
-          <DialogHeader>
-            <DialogTitle>Edit Activity</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                value={editForm.date}
-                onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="type">Type</Label>
-              <Select value={editForm.type} onValueChange={(value: ItineraryItem['type']) => setEditForm({ ...editForm, type: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {activityTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <type.icon className="w-4 h-4" />
-                        <span>{type.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditingItem(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveEdit}>
-                Save Changes
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

@@ -76,12 +76,12 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower.includes('red canyon')) return '🏜️';
   if (titleLower.includes('timna park')) return '🏞️';
   
-  // Type-based fallback emojis - all different from activity emojis
+  // Type-based fallback emojis - all different from activity emojis and reduced coffee usage
   switch (type) {
     case 'spiritual': return '🙏';
     case 'adventure': return '⛰️';
     case 'educational': return '📚';
-    case 'leisure': return '☕';
+    case 'leisure': return '🎮';
     case 'travel': return '🚐';
     case 'cultural': return '🎨';
     default: return '📅';
