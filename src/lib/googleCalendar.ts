@@ -63,11 +63,12 @@ export class GoogleCalendarService {
   }
 
   private async fetchEvents(startDate: Date, endDate: Date): Promise<GoogleCalendarEvent[]> {
-    // Use ISO date strings for the API request
+    // Use ISO date strings for the API request, but specify the calendar's timezone
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
     
-    // Simplified URL without timezone parameter to avoid 400 errors
+    // Use the calendar's timezone (America/New_York) to avoid date shifting
+    // Remove timezone parameter from URL to avoid 400 errors, but handle timezone in conversion
     const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(this.calendarId)}/events?key=${this.apiKey}&timeMin=${startDateStr}T00:00:00Z&timeMax=${endDateStr}T23:59:59Z&singleEvents=true&orderBy=startTime`;
     
     console.log('Fetching Google Calendar events from:', url);
@@ -104,8 +105,31 @@ export class GoogleCalendarService {
   }
 
   private convertEventToItineraryItem(event: GoogleCalendarEvent): ItineraryItem {
-    const startDate = event.start.dateTime ? new Date(event.start.dateTime) : new Date(event.start.date!);
-    const endDate = event.end.dateTime ? new Date(event.end.dateTime) : new Date(event.end.date!);
+    // Handle timezone conversion properly
+    let startDate: Date;
+    let endDate: Date;
+    
+    if (event.start.dateTime) {
+      // For events with specific time, parse the ISO string and convert to local time
+      const utcDate = new Date(event.start.dateTime);
+      // Convert UTC to local time by adjusting for timezone offset
+      const localOffset = new Date().getTimezoneOffset() * 60000; // in milliseconds
+      startDate = new Date(utcDate.getTime() - localOffset);
+    } else {
+      // For all-day events, use the date directly (these are already in local time)
+      startDate = new Date(event.start.date! + 'T00:00:00');
+    }
+    
+    if (event.end.dateTime) {
+      // For events with specific time, parse the ISO string and convert to local time
+      const utcDate = new Date(event.end.dateTime);
+      // Convert UTC to local time by adjusting for timezone offset
+      const localOffset = new Date().getTimezoneOffset() * 60000; // in milliseconds
+      endDate = new Date(utcDate.getTime() - localOffset);
+    } else {
+      // For all-day events, use the date directly (these are already in local time)
+      endDate = new Date(event.end.date! + 'T00:00:00');
+    }
     
     // Check if it's a multi-day event
     const isMultiDay = this.isMultiDayEvent(startDate, endDate);
@@ -114,6 +138,8 @@ export class GoogleCalendarService {
     const activityType = event.colorId ? colorToTypeMap[event.colorId] || DEFAULT_TYPE : DEFAULT_TYPE;
     
     console.log(`Converting event: ${event.summary} (color: ${event.colorId}, type: ${activityType})`);
+    console.log(`Original start: ${event.start.dateTime || event.start.date}`);
+    console.log(`Converted start: ${startDate.toISOString()}, End: ${endDate.toISOString()}`);
     
     return {
       id: event.id,

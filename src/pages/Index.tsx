@@ -21,7 +21,7 @@ const Index = () => {
   
   // Google Calendar settings
   const [googleApiKey, setGoogleApiKey] = useState(localStorage.getItem('googleApiKey') || 'AIzaSyCYaN-4ZaDF_HnJxhklQaSEtgC6o4qqiqs');
-  const [googleCalendarId, setGoogleCalendarId] = useState(localStorage.getItem('googleCalendarId') || '630205b44a2f9a1157dd2f1e2d07c4c17596c451dee5e7d481bcedb895d2d1c1@group.calendar.google.com');
+  const [googleCalendarId, setGoogleCalendarId] = useState(localStorage.getItem('googleCalendarId') || '6138a69dd5ffb10cb29d68d4be82a6c18487156ec0e10e2d51d752d6eb3fb2ad@group.calendar.google.com');
   
   // Local data
   const [localItems, setLocalItems] = useState<ItineraryItem[]>(itineraryData);
