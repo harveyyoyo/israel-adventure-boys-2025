@@ -148,6 +148,18 @@ export class GoogleCalendarService {
     
     // Create a normalized date for comparison (just the date part, no time)
     const normalizedStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const normalizedEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    
+    // For debugging, log the specific dates for "North Overnight" events
+    if (event.summary.toLowerCase().includes('north overnight')) {
+      console.log(`NORTH OVERNIGHT DEBUG:`);
+      console.log(`  Original start date string: ${event.start.date}`);
+      console.log(`  Original end date string: ${event.end.date}`);
+      console.log(`  Parsed start date: ${normalizedStartDate.toLocaleDateString()}`);
+      console.log(`  Parsed end date: ${normalizedEndDate.toLocaleDateString()}`);
+      console.log(`  Start date parts: ${event.start.date?.split('-').join(', ')}`);
+      console.log(`  End date parts: ${event.end.date?.split('-').join(', ')}`);
+    }
     
     return {
       id: event.id,
@@ -156,7 +168,7 @@ export class GoogleCalendarService {
       fullDate: normalizedStartDate, // Use normalized date to avoid timezone issues
       type: activityType,
       isMultiDay: isMultiDay,
-      endDate: isMultiDay ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()) : undefined
+      endDate: isMultiDay ? normalizedEndDate : undefined
     };
   }
 
