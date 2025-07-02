@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ItineraryItem } from '@/data/itineraryData';
 import { 
   Heart, 
@@ -9,6 +10,7 @@ import {
   Palette,
   MapPin
 } from 'lucide-react';
+import { getEventEmoji } from '@/utils/emojiUtils';
 
 interface CalendarPDFViewProps {
   items: ItineraryItem[];
@@ -113,105 +115,25 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
     return normalizedTargetDate.getTime() === itemStartDate.getTime();
   };
 
-  const getEventEmoji = (title: string, type: string) => {
-    const titleLower = title.toLowerCase();
-    
-    // Single, fun and engaging event emojis
-    if (titleLower.includes('shabbos')) return '🕯️';
-    if (titleLower.includes('tzfat') || titleLower.includes('tzfas')) return '🏔️';
-    if (titleLower.includes('wall') || titleLower.includes('kotel')) return '🕊️';
-    if (titleLower.includes('museum')) return '🏛️';
-    if (titleLower.includes('market') || titleLower.includes('shuk')) return '🛒';
-    if (titleLower.includes('beach') || titleLower.includes('eilat')) return '🏖️';
-    if (titleLower.includes('hike') || titleLower.includes('hiking')) return '🥾';
-    if (titleLower.includes('yurts') || titleLower.includes('overnight')) return '⛺';
-    if (titleLower.includes('old city')) return '🏰';
-    if (titleLower.includes('flight') || titleLower.includes('travel')) return '✈️';
-    if (titleLower.includes('pool') || titleLower.includes('swim')) return '🏊';
-    if (titleLower.includes('meal') || titleLower.includes('dinner')) return '🍽️';
-    if (titleLower.includes('tour')) return '🚌';
-    if (titleLower.includes('activity')) return '🎯';
-    if (titleLower.includes('masada')) return '🏜️';
-    if (titleLower.includes('dead sea')) return '🌊';
-    if (titleLower.includes('golan')) return '⛰️';
-    if (titleLower.includes('rafting')) return '🛶';
-    if (titleLower.includes('chocolate')) return '🍫';
-    if (titleLower.includes('paintball')) return '🎨';
-    if (titleLower.includes('archery')) return '🏹';
-    if (titleLower.includes('donkey')) return '🦙';
-    if (titleLower.includes('snorkeling')) return '🤿';
-    if (titleLower.includes('scuba')) return '🤿';
-    if (titleLower.includes('glass')) return '🪟';
-    if (titleLower.includes('dig')) return '⛏️';
-    if (titleLower.includes('atv')) return '🏎️';
-    if (titleLower.includes('boat')) return '⛵';
-    if (titleLower.includes('sailing')) return '⛵';
-    if (titleLower.includes('bonfire')) return '🔥';
-    if (titleLower.includes('smores')) return '🍫';
-    if (titleLower.includes('kumzits')) return '🎵';
-    if (titleLower.includes('learning')) return '📖';
-    if (titleLower.includes('shiur')) return '📚';
-    if (titleLower.includes('davening')) return '🙏';
-    if (titleLower.includes('kiddush')) return '🍷';
-    if (titleLower.includes('fabrengen')) return '🎉';
-    if (titleLower.includes('orientation')) return '📋';
-    if (titleLower.includes('welcome')) return '👋';
-    if (titleLower.includes('boys start')) return '🚀';
-    if (titleLower.includes('boys end')) return '🏁';
-    if (titleLower.includes('flight')) return '✈️';
-    if (titleLower.includes('camp day')) return '🏕️';
-    if (titleLower.includes('chill day')) return '😌';
-    if (titleLower.includes('talent show')) return '🎭';
-    if (titleLower.includes('improv')) return '🎪';
-    if (titleLower.includes('dodgeball')) return '⚾';
-    if (titleLower.includes('capture the counselor')) return '🎯';
-    if (titleLower.includes('banana boating')) return '🍌';
-    if (titleLower.includes('fear factor')) return '😱';
-    if (titleLower.includes('stomp')) return '👟';
-    if (titleLower.includes('water sports')) return '🏄';
-    if (titleLower.includes('ice mall')) return '❄️';
-    if (titleLower.includes('dolphins')) return '🐬';
-    if (titleLower.includes('bbq')) return '🍖';
-    if (titleLower.includes('pizza')) return '🍕';
-    if (titleLower.includes('sushi')) return '🍣';
-    if (titleLower.includes('forest walk')) return '🌲';
-    if (titleLower.includes('nap')) return '😴';
-    if (titleLower.includes('natural spring')) return '💧';
-    if (titleLower.includes('cave')) return '🕳️';
-    if (titleLower.includes('haunted house')) return '👻';
-    if (titleLower.includes('blind museum')) return '🕶️';
-    if (titleLower.includes('nova festival')) return '🎪';
-    if (titleLower.includes('memorial')) return '🕊️';
-    if (titleLower.includes('sderot')) return '🏘️';
-    if (titleLower.includes('yad v\'shem')) return '🕯️';
-    if (titleLower.includes('tisha bav')) return '🕊️';
-    if (titleLower.includes('hidden waterfall')) return '🌊';
-    if (titleLower.includes('black canyon')) return '🏔️';
-    if (titleLower.includes('party boat')) return '🎉';
-    if (titleLower.includes('grape harvest')) return '🍇';
-    if (titleLower.includes('red canyon')) return '🏜️';
-    if (titleLower.includes('timna park')) return '🏞️';
-    
-    switch (type) {
-      case 'spiritual': return '🙏';
-      case 'adventure': return '⛰️';
-      case 'educational': return '📚';
-      case 'leisure': return '☕';
-      case 'travel': return '🚐';
-      case 'cultural': return '🎨';
-      default: return '📅';
-    }
+  // Helper function to check if a day is the end of a multi-day event
+  const isMultiDayEventEnd = (targetDate: Date, event: ItineraryItem) => {
+    if (!event.isMultiDay || !event.endDate) return false;
+    const normalizedTargetDate = normalizeDate(targetDate);
+    const itemEndDate = normalizeDate(event.endDate);
+    return normalizedTargetDate.getTime() === itemEndDate.getTime();
   };
 
   const getPrimaryEmojiForDay = (targetDate: Date) => {
     const activities = getActivitiesForDay(targetDate);
     if (activities.length === 0) return null;
     
+    // Prioritize multi-day events first
     const multiDayEvent = activities.find(activity => activity.isMultiDay);
     if (multiDayEvent) {
       return getEventEmoji(multiDayEvent.title, multiDayEvent.type);
     }
     
+    // Otherwise use the first regular activity
     const regularActivity = activities.find(activity => !activity.isMultiDay);
     if (regularActivity) {
       return getEventEmoji(regularActivity.title, regularActivity.type);
@@ -288,7 +210,9 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
               const dayOfWeek = day ? day.getDay() : 0;
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               
-              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent;
+              // Check if this is a "9 days" event - if so, don't apply multi-day background
+              const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
+              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
               
               return (
                 <div
@@ -299,9 +223,36 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                     shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
                   }`}
                 >
-                  {/* Background pattern overlay */}
-                  {day && primaryEmoji && (
-                    <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-current to-transparent pointer-events-none" />
+                  {/* Multi-day event overlay indicators */}
+                  {isMultiDay && multiDayEvent && day && (
+                    <>
+                      {/* Left border for start of multi-day event */}
+                      {isMultiDayEventStart(day, multiDayEvent) && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600 to-purple-600 z-20"></div>
+                      )}
+                      
+                      {/* Right border for end of multi-day event */}
+                      {isMultiDayEventEnd(day, multiDayEvent) && (
+                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-600 to-blue-600 z-20"></div>
+                      )}
+                      
+                      {/* Top border for continuation */}
+                      {!isMultiDayEventStart(day, multiDayEvent) && !isMultiDayEventEnd(day, multiDayEvent) && (
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 z-20"></div>
+                      )}
+                      
+                      {/* Multi-day event banner on start day */}
+                      {isMultiDayEventStart(day, multiDayEvent) && (
+                        <div className="absolute top-2 left-2 right-2 z-30">
+                          <div className="text-xs font-bold text-white px-3 py-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full shadow-lg border border-white">
+                            <div className="flex items-center gap-1 justify-center">
+                              <MapPin className="w-3 h-3" />
+                              <span className="truncate">{multiDayEvent.title}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   
                   {day && (
@@ -320,21 +271,6 @@ export const CalendarPDFView = ({ items }: CalendarPDFViewProps) => {
                           )}
                         </div>
                       </div>
-                      
-                      {/* Multi-day Events - show spanning banner only on start day */}
-                      {isMultiDay && multiDayEvent && day && isMultiDayEventStart(day, multiDayEvent) && (
-                        <div className="absolute top-8 left-0 right-0 z-30 flex items-center justify-center">
-                          <div className="text-xs font-bold text-white px-3 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 rounded-full shadow-lg border border-white">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-2 h-2" />
-                              <span>{multiDayEvent.title}</span>
-                              <span className="text-xs opacity-75">
-                                ({multiDayEvent.fullDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {multiDayEvent.endDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                       
                       {/* Enhanced Regular Activities */}
                       <div className="space-y-2 flex-1 relative z-10 mt-6">

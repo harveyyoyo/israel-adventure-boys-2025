@@ -16,15 +16,11 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [view, setView] = useState<'timeline' | 'calendar'>('calendar');
-  const [dataSource, setDataSource] = useState<'local' | 'google'>('local');
   const [showSettings, setShowSettings] = useState(false);
   
   // Google Calendar settings
   const [googleApiKey, setGoogleApiKey] = useState(localStorage.getItem('googleApiKey') || 'AIzaSyCYaN-4ZaDF_HnJxhklQaSEtgC6o4qqiqs');
   const [googleCalendarId, setGoogleCalendarId] = useState(localStorage.getItem('googleCalendarId') || '6138a69dd5ffb10cb29d68d4be82a6c18487156ec0e10e2d51d752d6eb3fb2ad@group.calendar.google.com');
-  
-  // Local data
-  const [localItems, setLocalItems] = useState<ItineraryItem[]>(itineraryData);
   
   // Date range for Google Calendar
   const startDate = new Date(2025, 6, 7); // July 7, 2025
@@ -36,26 +32,18 @@ const Index = () => {
     calendarId: googleCalendarId,
     startDate,
     endDate,
-    enabled: dataSource === 'google' && !!googleApiKey && !!googleCalendarId
+    enabled: !!googleApiKey && !!googleCalendarId
   });
 
-  // Use appropriate data source
-  const items = dataSource === 'google' ? googleItems : localItems;
+  // Use Google Calendar data only
+  const items = googleItems;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const handleUpdateItem = (id: string, updates: Partial<ItineraryItem>) => {
-    if (dataSource === 'local') {
-      setLocalItems(prevItems => 
-        prevItems.map(item => 
-          item.id === id 
-            ? { ...item, ...updates }
-            : item
-        )
-      );
-    }
     // Note: Google Calendar updates would require additional implementation
+    console.log('Update requested for Google Calendar item:', id, updates);
   };
 
   const handleSaveGoogleSettings = (apiKey: string, calendarId: string) => {
@@ -152,27 +140,6 @@ const Index = () => {
             
             {/* Data Source Toggle and Settings */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-white rounded-lg border p-1">
-                <Button
-                  size="sm"
-                  variant={dataSource === 'local' ? 'default' : 'ghost'}
-                  onClick={() => setDataSource('local')}
-                  className="flex items-center gap-1"
-                >
-                  <Database className="w-3 h-3" />
-                  Local
-                </Button>
-                <Button
-                  size="sm"
-                  variant={dataSource === 'google' ? 'default' : 'ghost'}
-                  onClick={() => setDataSource('google')}
-                  className="flex items-center gap-1"
-                >
-                  <Calendar className="w-3 h-3" />
-                  Google
-                </Button>
-              </div>
-              
               <Dialog open={showSettings} onOpenChange={setShowSettings}>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
@@ -204,25 +171,23 @@ const Index = () => {
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">
-                    Data Source: {dataSource === 'google' ? 'Google Calendar' : 'Local Data'}
+                    Data Source: Google Calendar
                   </span>
-                  {dataSource === 'google' && googleLoading && (
+                  {googleLoading && (
                     <span className="text-sm text-blue-600">Loading...</span>
                   )}
-                  {dataSource === 'google' && googleError && (
+                  {googleError && (
                     <span className="text-sm text-red-600">Error: {googleError}</span>
                   )}
-                  {dataSource === 'google' && !googleLoading && !googleError && (
+                  {!googleLoading && !googleError && (
                     <span className="text-sm text-green-600">
                       Connected ({googleItems.length} events, July 7 - Aug 18)
                     </span>
                   )}
                 </div>
-                {dataSource === 'google' && (
-                  <Button size="sm" variant="outline" onClick={refetchGoogle}>
-                    Refresh
-                  </Button>
-                )}
+                <Button size="sm" variant="outline" onClick={refetchGoogle}>
+                  Refresh
+                </Button>
               </div>
               
               <div className="max-w-7xl mx-auto">
