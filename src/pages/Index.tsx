@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { CalendarView } from "@/components/CalendarView";
+import { ExportOptions } from "@/components/ExportOptions";
 import { itineraryData, ItineraryItem } from "@/data/itineraryData";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { GoogleCalendarService } from "@/lib/googleCalendar";
@@ -9,7 +10,6 @@ import { Calendar, List, RefreshCw, Database } from "lucide-react";
 import { logActivitiesToFile } from "@/utils/activitiesLogger";
 
 const Index = () => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [view, setView] = useState<'timeline' | 'calendar'>(() => {
     // Set initial view based on screen size
@@ -38,11 +38,30 @@ const Index = () => {
     enabled: true
   });
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Index component - Google Calendar state:', {
+      googleLoading,
+      googleError,
+      itemsCount: googleItems.length,
+      apiKey: googleApiKey ? 'Present' : 'Missing',
+      calendarId: googleCalendarId ? 'Present' : 'Missing',
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    });
+  }, [googleLoading, googleError, googleItems.length, googleApiKey, googleCalendarId, startDate, endDate]);
+
   // Use Google Calendar data only
   const items = googleItems;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Get available types for filtering
+  const availableTypes = useMemo(() => {
+    const types = new Set(items.map(item => item.type));
+    return Array.from(types).sort();
+  }, [items]);
 
   // Responsive view switching based on screen size
   useEffect(() => {
@@ -80,11 +99,10 @@ const Index = () => {
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
-      return matchesSearch && matchesFilter;
+      return matchesFilter;
     });
-  }, [searchTerm, activeFilter, items]);
+  }, [activeFilter, items]);
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, typeof filteredItems> = {};
@@ -152,6 +170,9 @@ const Index = () => {
         
         {/* Control Buttons - Stack on mobile */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Export Options */}
+          <ExportOptions items={items} />
+          
           {/* Data Source Toggle */}
           <Button
             size="sm"
@@ -320,7 +341,7 @@ const Index = () => {
                         No activities found
                       </h3>
                       <p className="text-sm md:text-base text-gray-500">
-                        Try adjusting your search or filter criteria
+                        Try adjusting your filter criteria
                       </p>
                     </div>
                   )}
@@ -369,7 +390,7 @@ const Index = () => {
                         No activities found
                       </h3>
                       <p className="text-sm md:text-base text-gray-500">
-                        Try adjusting your search or filter criteria
+                        Try adjusting your filter criteria
                       </p>
                     </div>
                   )}

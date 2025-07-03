@@ -7,8 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:static": "vite build && npm run copy-static",
+    "build:static-local": "cross-env NODE_ENV=development vite build --mode development && npm run copy-static",
+    "copy-static": "node -e \"const fs=require('fs');const path=require('path');function copyDir(src,dest){if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});const items=fs.readdirSync(src);items.forEach(item=>{const srcPath=path.join(src,item);const destPath=path.join(dest,item);if(fs.statSync(srcPath).isDirectory()){copyDir(srcPath,destPath);}else{fs.copyFileSync(srcPath,destPath);}});}copyDir('dist','public-static');console.log('Static files copied to public-static/');\"",
+    "serve:static": "npx serve public-static -p 3000",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postbuild": "copy dist\\index.html dist\\404.html"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
