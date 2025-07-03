@@ -18,9 +18,16 @@ import {
   Download,
   MapPin,
   Clock,
-  Users
+  Users,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { getEventEmoji } from '@/utils/emojiUtils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CalendarViewProps {
   items: ItineraryItem[];
@@ -28,6 +35,8 @@ interface CalendarViewProps {
 }
 
 export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -155,7 +164,7 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
       return 'bg-indigo-700 text-white border-indigo-500';
     }
     if (titleLower.includes('eilat')) {
-      return 'bg-teal-700 text-white border-teal-500';
+      return 'bg-teal-700 text-white border-teal-600';
     }
     if (titleLower.includes('off shabbos')) {
       return 'bg-pink-700 text-white border-pink-500';
@@ -248,124 +257,363 @@ export const CalendarView = ({ items, onUpdateItem }: CalendarViewProps) => {
   const today = new Date();
   const normalizedToday = normalizeDate(today);
 
-  return (
-    <div className="w-full">
-      <div className="flex justify-end mb-4 print:hidden px-6">
-        <Button onClick={generatePDF} variant="outline" className="flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          Print Calendar
-        </Button>
-      </div>
+  // Mobile List View Component
+  const MobileListView = () => {
+    const groupedByMonth = () => {
+      const groups: Record<string, { date: Date; activities: ItineraryItem[] }[]> = {};
+      
+      calendarDays.forEach(day => {
+        if (!day) return;
+        
+        const monthYear = day.toLocaleDateString('en-US', { 
+          month: 'long', 
+          year: 'numeric' 
+        });
+        
+        if (!groups[monthYear]) {
+          groups[monthYear] = [];
+        }
+        
+        const activities = getActivitiesForDay(day);
+        if (activities.length > 0) {
+          groups[monthYear].push({ date: day, activities });
+        }
+      });
+      
+      return groups;
+    };
 
-      <div className="w-full min-h-screen bg-white p-4 print:p-0 print:min-h-0">
-        {/* Enhanced Header with Logo */}
-        <div className="text-center mb-6 border-b-4 border-blue-600 pb-4 print:mb-4 print:pb-2">
-          {/* Logo */}
-          <div className="flex justify-center items-center mb-4 print:mb-2">
-            <img 
-              src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
-              alt="Camp Sdei Chemed Logo" 
-              className="h-20 w-auto shadow-lg rounded-lg print:h-16"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-blue-800 mb-2 print:text-2xl print:mb-1">
-            Camp Sdei Chemed - Boys 2025
-          </h1>
-          <p className="text-lg text-blue-600 font-semibold mb-2 print:text-base print:mb-1">Summer Itinerary Calendar</p>
-          <p className="text-md text-gray-600 print:text-sm">July 7 - August 18, 2025</p>
-        </div>
-
-        <Card className="overflow-hidden shadow-lg border-2 border-gray-300 print:shadow-none print:border print:border-gray-400">
-          <CardContent className="p-0">
-            {/* Enhanced Header Row */}
-            <div className="grid grid-cols-7 bg-gradient-to-r from-blue-600 to-purple-600 border-b-2 border-blue-700 print:bg-blue-600">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                <div key={day} className={`p-3 text-center text-sm font-bold text-white border-r border-blue-500 last:border-r-0 print:p-2 print:text-xs ${
-                  index === 5 ? 'bg-blue-700' : index === 6 ? 'bg-purple-700' : ''
-                }`}>
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Enhanced Calendar Grid */}
-            <div className="grid grid-cols-7 relative">
-              {calendarDays.map((day, index) => {
-                const activities = day ? getActivitiesForDay(day) : [];
-                const isToday = day && normalizeDate(day).getTime() === normalizedToday.getTime();
-                const isMultiDay = activities.some(activity => activity.isMultiDay);
-                const multiDayEvent = activities.find(activity => activity.isMultiDay);
-                const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
-                
-                const regularActivities = activities.filter(activity => !activity.isMultiDay);
-                const dayOfWeek = day ? day.getDay() : 0;
+    return (
+      <div className="space-y-6">
+        {Object.entries(groupedByMonth()).map(([monthYear, days]) => (
+          <div key={monthYear}>
+            <h2 className="text-xl font-bold text-gray-800 mb-4 text-center border-b-2 border-blue-200 pb-2">
+              {monthYear}
+            </h2>
+            <div className="space-y-3">
+              {days.map(({ date, activities }) => {
+                const isToday = normalizeDate(date).getTime() === normalizedToday.getTime();
+                const dayOfWeek = date.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 
-                // Check if this is a "9 days" event - if so, don't apply multi-day background
-                const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
-                const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
-                
                 return (
-                  <div
-                    key={index}
-                    className={`min-h-[140px] p-3 border-r border-b border-gray-400 last:border-r-0 flex flex-col relative overflow-hidden print:min-h-[120px] print:p-2 ${
-                      day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-100'
-                    } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2 print:ring-1 print:ring-blue-600' : ''} ${
-                      shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                  <Card 
+                    key={date.toISOString()} 
+                    className={`${isToday ? 'ring-2 ring-blue-400 shadow-lg' : ''} ${
+                      isWeekend ? 'bg-pink-50' : 'bg-white'
                     }`}
                   >
-                    {day && (
-                      <>
-                        {/* Enhanced Date Display */}
-                        <div className={`text-lg font-bold mb-3 relative z-10 text-center print:text-base print:mb-2 ${
-                          isToday ? 'text-blue-700' : isWeekend ? 'text-blue-700' : 'text-gray-800'
-                        }`}>
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{day.getDate()}</span>
-                            {day.getDate() === 7 && day.getMonth() === 6 && (
-                              <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Jul</span>
-                            )}
-                            {day.getDate() === 1 && day.getMonth() === 7 && (
-                              <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Aug</span>
-                            )}
+                    <CardContent className="p-4">
+                      {/* Date Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`text-2xl font-bold ${
+                            isToday ? 'text-blue-700' : isWeekend ? 'text-blue-700' : 'text-gray-800'
+                          }`}>
+                            {date.getDate()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-gray-600">
+                              {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {date.toLocaleDateString('en-US', { month: 'short' })}
+                            </div>
                           </div>
                         </div>
-                        
-                        {/* Enhanced Activities */}
-                        <div className="space-y-2 flex-1 relative z-10 print:space-y-1">
-                          {activities
-                            .sort((a, b) => {
-                              // Multi-day events first, then by type
-                              if (a.isMultiDay && !b.isMultiDay) return -1;
-                              if (!a.isMultiDay && b.isMultiDay) return 1;
-                              return 0;
-                            })
-                            .map(activity => (
-                            <div
-                              key={activity.id}
-                              className={`text-xs p-2 rounded-lg border flex items-center gap-2 leading-tight font-medium print:p-1 print:text-xs ${
-                                activity.isMultiDay 
-                                  ? getMultiDayInvertedColors(activity.title)
-                                  : `${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`
-                              }`}
-                            >
-                              <span className="text-2xl flex-shrink-0 print:text-lg">
-                                {getEventEmoji(activity.title, activity.type)}
-                              </span>
-                              <span className="font-semibold text-xs leading-tight truncate print:text-xs">
+                        {isToday && (
+                          <Badge className="bg-blue-100 text-blue-800">Today</Badge>
+                        )}
+                      </div>
+                      
+                      {/* Activities */}
+                      <div className="space-y-1">
+                        {activities
+                          .sort((a, b) => {
+                            if (a.isMultiDay && !b.isMultiDay) return -1;
+                            if (!a.isMultiDay && b.isMultiDay) return 1;
+                            return 0;
+                          })
+                          .map(activity => (
+                          <div
+                            key={activity.id}
+                            className={`p-2 rounded border flex items-center gap-2 ${
+                              activity.isMultiDay 
+                                ? getMultiDayInvertedColors(activity.title)
+                                : `${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`
+                            }`}
+                          >
+                            <span className="text-lg flex-shrink-0">
+                              {getEventEmoji(activity.title, activity.type)}
+                            </span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-sm">
                                 {activity.title}
-                              </span>
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                {activity.isMultiDay && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Multi-day
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Mobile Calendar View Component (Emoji-only with tooltips)
+  const MobileCalendarView = () => (
+    <Card className="overflow-hidden shadow-lg border-2 border-gray-300 print:shadow-none print:border print:border-gray-400">
+      <CardContent className="p-0">
+        {/* Enhanced Header Row */}
+        <div className="grid grid-cols-7 bg-gradient-to-r from-blue-600 to-purple-600 border-b-2 border-blue-700 print:bg-blue-600">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+            <div key={day} className={`p-1 sm:p-3 text-center text-xs sm:text-sm font-bold text-white border-r border-blue-500 last:border-r-0 print:p-2 print:text-xs ${
+              index === 5 ? 'bg-blue-700' : index === 6 ? 'bg-purple-700' : ''
+            }`}>
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Calendar Grid - Emoji Only */}
+        <TooltipProvider>
+          <div className="grid grid-cols-7 relative">
+            {calendarDays.map((day, index) => {
+              const activities = day ? getActivitiesForDay(day) : [];
+              const isToday = day && normalizeDate(day).getTime() === normalizedToday.getTime();
+              const isMultiDay = activities.some(activity => activity.isMultiDay);
+              const multiDayEvent = activities.find(activity => activity.isMultiDay);
+              const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
+              
+              const regularActivities = activities.filter(activity => !activity.isMultiDay);
+              const dayOfWeek = day ? day.getDay() : 0;
+              const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+              
+              // Check if this is a "9 days" event - if so, don't apply multi-day background
+              const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
+              const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+              
+              return (
+                <div
+                  key={index}
+                  className={`min-h-[60px] sm:min-h-[140px] p-1 sm:p-3 border-r border-b border-gray-400 last:border-r-0 flex flex-col relative overflow-hidden print:min-h-[120px] print:p-2 ${
+                    day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-100'
+                  } ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 sm:ring-offset-2 print:ring-1 print:ring-blue-600' : ''} ${
+                    shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                  }`}
+                >
+                  {day && (
+                    <>
+                      {/* Enhanced Date Display */}
+                      <div className={`text-sm sm:text-lg font-bold mb-1 sm:mb-3 relative z-10 text-center print:text-base print:mb-2 ${
+                        isToday ? 'text-blue-700' : isWeekend ? 'text-blue-700' : 'text-gray-800'
+                      }`}>
+                        <div className="flex items-center justify-center gap-1">
+                          <span>{day.getDate()}</span>
+                          {day.getDate() === 7 && day.getMonth() === 6 && (
+                            <span className="text-xs text-blue-600 font-bold bg-blue-100 px-1 sm:px-2 py-0.5 sm:py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Jul</span>
+                          )}
+                          {day.getDate() === 1 && day.getMonth() === 7 && (
+                            <span className="text-xs text-blue-600 font-bold bg-blue-100 px-1 sm:px-2 py-0.5 sm:py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Aug</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Mobile: Emoji-only Activities with Tooltips */}
+                      <div className="flex flex-wrap gap-1 justify-center items-center flex-1 relative z-10">
+                        {activities
+                          .sort((a, b) => {
+                            // Multi-day events first, then by type
+                            if (a.isMultiDay && !b.isMultiDay) return -1;
+                            if (!a.isMultiDay && b.isMultiDay) return 1;
+                            return 0;
+                          })
+                          .map(activity => (
+                          <Tooltip key={activity.id}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className={`text-lg sm:text-xl p-1 rounded cursor-pointer transition-all hover:scale-110 ${
+                                  activity.isMultiDay 
+                                    ? 'bg-black/20 text-white'
+                                    : 'bg-white/80 shadow-sm'
+                                }`}
+                              >
+                                {getEventEmoji(activity.title, activity.type)}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <div className="space-y-2">
+                                <div className="font-semibold text-sm">
+                                  {activity.title}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {activity.isMultiDay && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Multi-day
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {activity.date}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </TooltipProvider>
+      </CardContent>
+    </Card>
+  );
+
+  // Desktop Grid View Component
+  const DesktopGridView = () => (
+    <Card className="overflow-hidden shadow-lg border-2 border-gray-300 print:shadow-none print:border print:border-gray-400">
+      <CardContent className="p-0">
+        {/* Enhanced Header Row */}
+        <div className="grid grid-cols-7 bg-gradient-to-r from-blue-600 to-purple-600 border-b-2 border-blue-700 print:bg-blue-600">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+            <div key={day} className={`p-3 text-center text-sm font-bold text-white border-r border-blue-500 last:border-r-0 print:p-2 print:text-xs ${
+              index === 5 ? 'bg-blue-700' : index === 6 ? 'bg-purple-700' : ''
+            }`}>
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Enhanced Calendar Grid */}
+        <div className="grid grid-cols-7 relative">
+          {calendarDays.map((day, index) => {
+            const activities = day ? getActivitiesForDay(day) : [];
+            const isToday = day && normalizeDate(day).getTime() === normalizedToday.getTime();
+            const isMultiDay = activities.some(activity => activity.isMultiDay);
+            const multiDayEvent = activities.find(activity => activity.isMultiDay);
+            const primaryEmoji = day ? getPrimaryEmojiForDay(day) : null;
+            
+            const regularActivities = activities.filter(activity => !activity.isMultiDay);
+            const dayOfWeek = day ? day.getDay() : 0;
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            
+            // Check if this is a "9 days" event - if so, don't apply multi-day background
+            const isNineDays = multiDayEvent && multiDayEvent.title.toLowerCase().includes('9 days');
+            const shouldApplyMultiDayBackground = isMultiDay && multiDayEvent && !isNineDays;
+            
+            return (
+              <div
+                key={index}
+                className={`min-h-[140px] p-3 border-r border-b border-gray-400 last:border-r-0 flex flex-col relative overflow-hidden print:min-h-[120px] print:p-2 ${
+                  day ? (isWeekend ? 'bg-pink-50' : 'bg-white') : 'bg-gray-100'
+                } ${isToday ? 'ring-2 ring-blue-400 ring-offset-2 print:ring-1 print:ring-blue-600' : ''} ${
+                  shouldApplyMultiDayBackground ? getMultiDayBackgroundColor(multiDayEvent.title) : ''
+                }`}
+              >
+                {day && (
+                  <>
+                    {/* Enhanced Date Display */}
+                    <div className={`text-lg font-bold mb-3 relative z-10 text-center print:text-base print:mb-2 ${
+                      isToday ? 'text-blue-700' : isWeekend ? 'text-blue-700' : 'text-gray-800'
+                    }`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>{day.getDate()}</span>
+                        {day.getDate() === 7 && day.getMonth() === 6 && (
+                          <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Jul</span>
+                        )}
+                        {day.getDate() === 1 && day.getMonth() === 7 && (
+                          <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full print:text-xs print:px-1 print:py-0.5">Aug</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Enhanced Activities */}
+                    <div className="space-y-0.5 sm:space-y-1 flex-1 relative z-10 print:space-y-1">
+                      {activities
+                        .sort((a, b) => {
+                          // Multi-day events first, then by type
+                          if (a.isMultiDay && !b.isMultiDay) return -1;
+                          if (!a.isMultiDay && b.isMultiDay) return 1;
+                          return 0;
+                        })
+                        .map(activity => (
+                        <div
+                          key={activity.id}
+                          className={`text-xs p-0.5 sm:p-1 rounded border flex items-center gap-1 sm:gap-2 leading-tight font-medium print:p-1 print:text-xs ${
+                            activity.isMultiDay 
+                              ? getMultiDayInvertedColors(activity.title)
+                              : `${getTypeColor(activity.type)} bg-white/90 backdrop-blur-sm shadow-sm`
+                          }`}
+                        >
+                          <span className="text-sm sm:text-lg flex-shrink-0 print:text-lg">
+                            {getEventEmoji(activity.title, activity.type)}
+                          </span>
+                          <span className="font-semibold text-xs leading-tight truncate print:text-xs">
+                            {activity.title}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="w-full">
+      <div className="flex justify-end mb-4 print:hidden px-2 sm:px-6">
+        <Button onClick={generatePDF} variant="outline" className="flex items-center gap-2 text-xs sm:text-sm">
+          <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Print Calendar</span>
+          <span className="sm:hidden">Print</span>
+        </Button>
+      </div>
+
+      <div className="w-full min-h-screen bg-white p-2 sm:p-4 print:p-0 print:min-h-0">
+        {/* Enhanced Header with Logo */}
+        <div className="text-center mb-4 sm:mb-6 border-b-4 border-blue-600 pb-2 sm:pb-4 print:mb-4 print:pb-2">
+          {/* Logo */}
+          <div className="flex justify-center items-center mb-2 sm:mb-4 print:mb-2">
+            <img 
+              src="https://campsdeichemed.com/wp-content/uploads/2022/09/sdei-chemed-logo-3.png" 
+              alt="Camp Sdei Chemed Logo" 
+              className="h-12 w-auto sm:h-20 shadow-lg rounded-lg print:h-16"
+            />
+          </div>
+          <h1 className="text-xl sm:text-3xl font-bold text-blue-800 mb-1 sm:mb-2 print:text-2xl print:mb-1">
+            Camp Sdei Chemed - Boys 2025
+          </h1>
+          <p className="text-sm sm:text-lg text-blue-600 font-semibold mb-1 sm:mb-2 print:text-base print:mb-1">Summer Itinerary Calendar</p>
+          <p className="text-xs sm:text-md text-gray-600 print:text-sm">July 7 - August 18, 2025</p>
+        </div>
+
+        {/* Responsive View */}
+        <div className="block lg:hidden">
+          <MobileCalendarView />
+        </div>
+        <div className="hidden lg:block">
+          <DesktopGridView />
+        </div>
       </div>
     </div>
   );

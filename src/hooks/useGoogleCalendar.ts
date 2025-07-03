@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ItineraryItem } from '@/data/itineraryData';
 import { GoogleCalendarService } from '@/lib/googleCalendar';
 
@@ -17,68 +17,93 @@ interface UseGoogleCalendarReturn {
   refetch: () => Promise<void>;
 }
 
-export function useGoogleCalendar({
-  apiKey,
-  calendarId,
-  startDate,
-  endDate,
-  enabled = true
-}: UseGoogleCalendarOptions): UseGoogleCalendarReturn {
+export const useGoogleCalendar = (options: UseGoogleCalendarOptions): UseGoogleCalendarReturn => {
   const [items, setItems] = useState<ItineraryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lastFetchRef = useRef<string>('');
+  const [lastFetch, setLastFetch] = useState<number>(0);
+  
+  const { apiKey, calendarId, startDate, endDate, enabled = true } = options;
+  
+  const serviceRef = useRef<GoogleCalendarService | null>(null);
+  const hasInitializedRef = useRef(false);
+  
+  // Create service instance
+  useEffect(() => {
+    if (apiKey && calendarId) {
+      try {
+        serviceRef.current = new GoogleCalendarService(apiKey, calendarId);
+        console.log('GoogleCalendarService initialized with:', {
+          apiKey: apiKey.substring(0, 10) + '...',
+          calendarId: calendarId
+        });
+      } catch (err) {
+        console.error('Failed to initialize GoogleCalendarService:', err);
+        setError(err instanceof Error ? err.message : 'Failed to initialize calendar service');
+      }
+    }
+  }, [apiKey, calendarId]);
 
-  // Memoize date strings to prevent unnecessary re-renders
-  const startDateStr = useMemo(() => startDate.toISOString(), [startDate]);
-  const endDateStr = useMemo(() => endDate.toISOString(), [endDate]);
-
-  const fetchItems = useCallback(async () => {
-    const fetchKey = `${apiKey}-${calendarId}-${startDateStr}-${endDateStr}-${enabled}`;
-    
-    console.log('useGoogleCalendar: fetchItems called', { enabled, apiKey: !!apiKey, calendarId, startDateStr, endDateStr });
-    
-    if (!enabled || !apiKey || !calendarId) {
-      console.log('useGoogleCalendar: Skipping fetch - not enabled or missing credentials');
+  const fetchData = useCallback(async (forceRefresh = false) => {
+    if (!enabled || !serviceRef.current) {
+      console.log('Calendar fetch disabled or service not initialized');
       return;
     }
 
-    // Prevent duplicate fetches
-    if (lastFetchRef.current === fetchKey) {
-      console.log('useGoogleCalendar: Skipping duplicate fetch');
+    // Add cache busting - force refresh if requested or if data is older than 5 minutes
+    const now = Date.now();
+    const shouldRefresh = forceRefresh || (now - lastFetch > 5 * 60 * 1000);
+    
+    if (!shouldRefresh && items.length > 0) {
+      console.log('Using cached data, last fetch was', Math.round((now - lastFetch) / 1000), 'seconds ago');
       return;
     }
 
-    console.log('useGoogleCalendar: Starting fetch...');
     setLoading(true);
     setError(null);
-    lastFetchRef.current = fetchKey;
-
+    
     try {
-      const service = new GoogleCalendarService(apiKey, calendarId);
-      console.log('useGoogleCalendar: Service created, fetching items...');
-      const fetchedItems = await service.getItineraryItems(startDate, endDate);
-      console.log('useGoogleCalendar: Items fetched successfully', fetchedItems.length, 'items');
+      console.log('Fetching calendar data...', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        forceRefresh
+      });
+      
+      const fetchedItems = await serviceRef.current.getItineraryItems(startDate, endDate);
+      
+      console.log('Calendar data fetched successfully:', {
+        itemCount: fetchedItems.length,
+        firstItem: fetchedItems[0]?.title,
+        lastItem: fetchedItems[fetchedItems.length - 1]?.title
+      });
+      
       setItems(fetchedItems);
+      setLastFetch(now);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch calendar events';
-      console.error('useGoogleCalendar: Error occurred', err);
-      setError(errorMessage);
+      console.error('Error fetching calendar data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch calendar data');
     } finally {
-      console.log('useGoogleCalendar: Fetch completed, setting loading to false');
       setLoading(false);
     }
-  }, [apiKey, calendarId, startDateStr, endDateStr, enabled]);
+  }, [enabled, startDate, endDate, lastFetch]);
 
+  // Initial fetch - only run once
   useEffect(() => {
-    console.log('useGoogleCalendar: useEffect triggered', { enabled, apiKey: !!apiKey, calendarId });
-    fetchItems();
-  }, [fetchItems]);
+    if (!hasInitializedRef.current && enabled && apiKey && calendarId) {
+      hasInitializedRef.current = true;
+      fetchData(true);
+    }
+  }, [enabled, apiKey, calendarId, fetchData]);
+
+  // Refetch function
+  const refetch = useCallback(async () => {
+    await fetchData(true);
+  }, [fetchData]);
 
   return {
     items,
     loading,
     error,
-    refetch: fetchItems
+    refetch
   };
-} 
+}; 

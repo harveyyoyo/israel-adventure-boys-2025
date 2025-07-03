@@ -1,6 +1,32 @@
 export const getEventEmoji = (title: string, type: string) => {
   const titleLower = title.toLowerCase();
 
+  // Direct lookup for known fallback activities
+  const fallbackEmojiMap = {
+    'fun': '🎉',
+    "shiva assur b'tammuz": '🕊️',
+    'neot kedumim': '🌾',
+    'raft building': '🛶',
+    'goat herding': '🐐',
+    'goodbye :(': '👋',
+    'tefillin at army base': '🕯️',
+    "akko's tunisian synagogue": '🕍',
+    'rosh hanikra': '🏞️',
+    'tiveria tayelet': '🚶‍♂️',
+    'aqua kef': '💦',
+    'rechov yerushalayim': '🏙️',
+    'biking the kineret': '🚴',
+    'meiron': '🕍',
+    'chevron': '🏘️',
+    'shuva- grill for the soldiers': '🍖',
+    'ein mabua': '💧',
+    'susya': '🏜️',
+    'sleep at gemalia desert oasis': '🏜️',
+    "s'dei chemed's got talent": '🎤',
+  };
+  const normalized = title.trim().toLowerCase();
+  if (fallbackEmojiMap[normalized]) return fallbackEmojiMap[normalized];
+
   // Robust, exact match for fallback leisure activities
   if (titleLower === 'unwind session') return '🫧';
   if (titleLower === 'personal time') return '🤍';
@@ -14,6 +40,47 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower === 'free period') return '🕒';
   if (titleLower === 'break time') return '☕';
   if (titleLower === 'relaxation') return '🧘';
+  
+  // Specific emoji rules for activities that were showing leisure fallback
+  if (titleLower.includes('kever')) return '🕯️'; // Tomb/grave sites
+  if (titleLower.includes('orientation')) return '📋';
+  if (titleLower.includes('welcome')) return '👋';
+  if (titleLower.includes('departure')) return '✈️';
+  if (titleLower.includes('arrival')) return '🚌';
+  if (titleLower.includes('check in')) return '📝';
+  if (titleLower.includes('check out')) return '📋';
+  if (titleLower.includes('camp day')) return '🏕️';
+  if (titleLower.includes('chill day')) return '😌';
+  if (titleLower.includes('sports')) return '⚽';
+  if (titleLower.includes('gaga')) return '🏃';
+  if (titleLower.includes('dodgeball')) return '⚾';
+  if (titleLower.includes('capture the flag')) return '🚩';
+  if (titleLower.includes('banana boating')) return '🍌';
+  if (titleLower.includes('fear factor')) return '😱';
+  if (titleLower.includes('stomp')) return '👟';
+  if (titleLower.includes('water sports')) return '🏄';
+  if (titleLower.includes('ice mall')) return '❄️';
+  if (titleLower.includes('dolphins')) return '🐬';
+  if (titleLower.includes('bbq')) return '🍖';
+  if (titleLower.includes('pizza')) return '🍕';
+  if (titleLower.includes('sushi')) return '🍣';
+  if (titleLower.includes('forest walk')) return '🌲';
+  if (titleLower.includes('nap')) return '😴';
+  if (titleLower.includes('natural spring')) return '💧';
+  if (titleLower.includes('cave')) return '🕳️';
+  if (titleLower.includes('haunted house')) return '👻';
+  if (titleLower.includes('blind museum')) return '🕶️';
+  if (titleLower.includes('nova festival')) return '🎪';
+  if (titleLower.includes('memorial')) return '🕊️';
+  if (titleLower.includes('sderot')) return '🏘️';
+  if (titleLower.includes('yad v\'shem')) return '🕯️';
+  if (titleLower.includes('tisha bav')) return '🕊️';
+  if (titleLower.includes('hidden waterfall')) return '🌊';
+  if (titleLower.includes('black canyon')) return '🏔️';
+  if (titleLower.includes('party boat')) return '🎉';
+  if (titleLower.includes('grape harvest')) return '🍇';
+  if (titleLower.includes('red canyon')) return '🏜️';
+  if (titleLower.includes('timna park')) return '🏞️';
   
   // All specific emoji checks (including 'hot ones')
   if (titleLower.includes('hot ones')) return '🌶️';
@@ -54,15 +121,10 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower.includes('davening')) return '🙏';
   if (titleLower.includes('kiddush')) return '🍷';
   if (titleLower.includes('fabrengen')) return '🎉';
-  if (titleLower.includes('orientation')) return '📋';
-  if (titleLower.includes('welcome')) return '👋';
   if (titleLower.includes('boys start')) return '🚀';
   if (titleLower.includes('boys end')) return '🏁';
-  if (titleLower.includes('camp day')) return '🏕️';
-  if (titleLower.includes('chill day')) return '😌';
   if (titleLower.includes('talent show')) return '🎭';
   if (titleLower.includes('improv')) return '🎪';
-  if (titleLower.includes('dodgeball')) return '⚾';
   if (titleLower.includes('capture the counselor')) return '🎯';
   if (titleLower.includes('banana boating')) return '🍌';
   if (titleLower.includes('fear factor')) return '😱';
@@ -90,10 +152,8 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower.includes('grape harvest')) return '🍇';
   if (titleLower.includes('red canyon')) return '🏜️';
   if (titleLower.includes('timna park')) return '🏞️';
-  if (titleLower.includes('departure')) return '✈️';
   
   // Additional common camp activities
-  if (titleLower.includes('arrival')) return '🚌';
   if (titleLower.includes('check in')) return '📝';
   if (titleLower.includes('check out')) return '📋';
   if (titleLower.includes('breakfast')) return '🥐';
@@ -107,7 +167,6 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower.includes('morning')) return '🌅';
   if (titleLower.includes('evening')) return '🌆';
   if (titleLower.includes('night')) return '🌙';
-  if (titleLower.includes('sports')) return '⚽';
   if (titleLower.includes('basketball')) return '🏀';
   if (titleLower.includes('soccer')) return '⚽';
   if (titleLower.includes('volleyball')) return '🏐';
@@ -288,13 +347,8 @@ export const getEventEmoji = (title: string, type: string) => {
   if (titleLower.includes('kiddush')) return '🍷';
   if (titleLower.includes('fabrengen')) return '🎉';
   if (titleLower.includes('kumzits')) return '🎵';
-  if (titleLower.includes('orientation')) return '📋';
-  if (titleLower.includes('welcome')) return '👋';
   if (titleLower.includes('boys start')) return '🚀';
   if (titleLower.includes('boys end')) return '🏁';
-  if (titleLower.includes('camp day')) return '🏕️';
-  if (titleLower.includes('chill day')) return '😌';
-  if (titleLower.includes('improv')) return '🎪';
   
   // Additional adventure and outdoor activities
   if (titleLower.includes('masada')) return '🏜️';
@@ -329,4 +383,29 @@ export const getEventEmoji = (title: string, type: string) => {
     case 'cultural': return '🎨';
     default: return '📅';
   }
+
+  // Normalization for robust matching
+  const norm = (str) => str.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  const normTitle = norm(title);
+
+  // Robust fallback mappings for your calendar (broad substring matching)
+  if (normTitle.includes('fun')) return '🎉';
+  if (normTitle.includes('shiva') || normTitle.includes('assur')) return '🕊️';
+  if (normTitle.includes('kedumim')) return '🌾';
+  if (normTitle.includes('raft')) return '🛶';
+  if (normTitle.includes('goat')) return '🐐';
+  if (normTitle.includes('goodbye')) return '👋';
+  if (normTitle.includes('shivaassurbtammuz')) return '🕊️';
+  if (normTitle.includes('neotkedumim')) return '🌾';
+  if (normTitle.includes('aqua') || normTitle.includes('kef')) return '💦';
+  if (normTitle.includes('rechov') || normTitle.includes('yerushalayim')) return '🏙️';
+  if (normTitle.includes('biking') || normTitle.includes('kineret')) return '🚴';
+  if (normTitle.includes('meiron')) return '🕍';
+  if (normTitle.includes('chevron')) return '🏘️';
+  if (normTitle.includes('shuva') && normTitle.includes('grill')) return '🍖';
+  if (normTitle.includes('ein') && normTitle.includes('mabua')) return '💧';
+  if (normTitle.includes('susya')) return '🏜️';
+  if (normTitle.includes('gemalia') || normTitle.includes('oasis')) return '🏜️';
+  if (normTitle.includes('talent')) return '🎤';
+  if (normTitle.includes('goodbye')) return '👋';
 }; 

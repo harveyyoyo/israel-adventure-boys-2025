@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -66,6 +65,87 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  /* Ensure calendar grid works on very small screens */
+  .grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  
+  /* Prevent text overflow in calendar cells */
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Ensure buttons don't overflow on mobile */
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+  
+  /* Optimize touch targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Ensure proper spacing on mobile */
+  .space-y-1 > * + * {
+    margin-top: 0.25rem;
+  }
+  
+  .space-y-0\.5 > * + * {
+    margin-top: 0.125rem;
+  }
+  
+  /* Optimize calendar cell content - more compact */
+  .min-h-\[80px\] {
+    min-height: 60px;
+  }
+  
+  /* Ensure emojis don't get too small */
+  .text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  /* Compact padding for mobile */
+  .p-0\.5 {
+    padding: 0.125rem;
+  }
+  
+  /* Smaller text for mobile */
+  .text-xs {
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  /* Even more compact calendar cells */
+  .min-h-\[80px\] {
+    min-height: 70px;
+  }
+  
+  /* Smaller text for very small screens */
+  .text-xs {
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+  }
+  
+  /* Compact padding */
+  .p-1 {
+    padding: 0.25rem;
+  }
+  
+  /* Ensure grid stays intact */
+  .grid {
+    display: grid;
   }
 }
 
