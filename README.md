@@ -1,73 +1,64 @@
-# Welcome to your Lovable project
+# Israel Adventure Boys 2025 - Camp Sdei Chemed
 
-## Project info
+## Project Overview
 
-**URL**: https://lovable.dev/projects/18f07eb1-2d38-46b5-a280-cb5ff30402a5
+This is the official itinerary and schedule management system for Camp Sdei Chemed International's 2025 summer program "Off the Beaten Path".
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Interactive Calendar View**: Browse activities by date with Google Calendar integration
+- **Timeline View**: See the complete trip timeline with all activities
+- **Activity Details**: View detailed information about each activity including locations, times, and descriptions
+- **Emoji System**: Comprehensive emoji mappings for all camp activities
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/18f07eb1-2d38-46b5-a280-cb5ff30402a5) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies Used
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite** - Fast build tool and development server
+- **TypeScript** - Type-safe JavaScript
+- **React** - Modern UI framework
+- **shadcn-ui** - Beautiful, accessible UI components
+- **Tailwind CSS** - Utility-first CSS framework
+- **Google Calendar API** - Real-time schedule integration
 
-## How can I deploy this project?
+## Getting Started
 
-Simply open [Lovable](https://lovable.dev/projects/18f07eb1-2d38-46b5-a280-cb5ff30402a5) and click on Share -> Publish.
+### Prerequisites
 
-## Can I connect a custom domain to my Lovable project?
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Yes, you can!
+### Local Development
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```sh
+# Step 1: Clone the repository
+git clone <YOUR_GIT_URL>
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Step 2: Navigate to the project directory
+cd israel-adventure-boys-2025
+
+# Step 3: Install dependencies
+npm install
+
+# Step 4: Start the development server
+npm run dev
+```
+
+The application will be available at `http://localhost:8080/`
+
+## Deployment
+
+This project is deployed on GitHub Pages. The live site is automatically updated when changes are pushed to the `gh-pages` branch.
+
+## Project Structure
+
+- `src/components/` - React components
+- `src/pages/` - Main page components
+- `src/hooks/` - Custom React hooks
+- `src/utils/` - Utility functions
+- `public/` - Static assets
+
+## Contributing
+
+This project is maintained by the Camp Sdei Chemed team. For questions or issues, please contact the development team.
