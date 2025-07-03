@@ -1,56 +1,103 @@
-import { useEffect, useState } from 'react';
+
 import { CalendarPDFView } from '@/components/CalendarPDFView';
 import { ItineraryItem } from '@/data/itineraryData';
-import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
+
+// Static itinerary data
+const staticItems: ItineraryItem[] = [
+  {
+    id: "1",
+    title: "Arrival & Welcome",
+    date: "Monday, July 7, 2025",
+    fullDate: new Date(2025, 6, 7),
+    type: "travel",
+    isMultiDay: false
+  },
+  {
+    id: "2", 
+    title: "Jerusalem Old City Tour",
+    date: "Tuesday, July 8, 2025",
+    fullDate: new Date(2025, 6, 8),
+    type: "cultural",
+    isMultiDay: false
+  },
+  {
+    id: "3",
+    title: "Masada & Dead Sea",
+    date: "Wednesday, July 9, 2025", 
+    fullDate: new Date(2025, 6, 9),
+    type: "adventure",
+    isMultiDay: false
+  },
+  {
+    id: "4",
+    title: "Tzfat & Northern Israel",
+    date: "Thursday, July 10, 2025",
+    fullDate: new Date(2025, 6, 10),
+    type: "spiritual",
+    isMultiDay: false
+  },
+  {
+    id: "5",
+    title: "Tel Aviv & Beach Day",
+    date: "Friday, July 11, 2025",
+    fullDate: new Date(2025, 6, 11),
+    type: "leisure",
+    isMultiDay: false
+  },
+  {
+    id: "6",
+    title: "Shabbos in Jerusalem",
+    date: "Saturday, July 12, 2025",
+    fullDate: new Date(2025, 6, 12),
+    type: "spiritual",
+    isMultiDay: false
+  },
+  {
+    id: "7",
+    title: "Golan Heights Adventure",
+    date: "Sunday, July 13, 2025",
+    fullDate: new Date(2025, 6, 13),
+    type: "adventure",
+    isMultiDay: false
+  },
+  {
+    id: "8",
+    title: "Eilat Beach Resort",
+    date: "Monday, July 14, 2025",
+    fullDate: new Date(2025, 6, 14),
+    type: "leisure",
+    isMultiDay: true,
+    endDate: new Date(2025, 6, 16)
+  },
+  {
+    id: "9",
+    title: "Red Sea Snorkeling",
+    date: "Tuesday, July 15, 2025",
+    fullDate: new Date(2025, 6, 15),
+    type: "adventure",
+    isMultiDay: false
+  },
+  {
+    id: "10",
+    title: "Desert Camping Experience",
+    date: "Wednesday, July 16, 2025",
+    fullDate: new Date(2025, 6, 16),
+    type: "adventure",
+    isMultiDay: true,
+    endDate: new Date(2025, 6, 17)
+  },
+  {
+    id: "11",
+    title: "Farewell Breakfast & Departure",
+    date: "Friday, July 18, 2025",
+    fullDate: new Date(2025, 6, 18),
+    type: "travel",
+    isMultiDay: false
+  }
+];
 
 const CalendarPDF = () => {
-  const [items, setItems] = useState<ItineraryItem[]>([]);
-  
-  // Google Calendar settings
-  const googleApiKey = localStorage.getItem('googleApiKey') || 'AIzaSyCYaN-4ZaDF_HnJxhklQaSEtgC6o4qqiqs';
-  const googleCalendarId = localStorage.getItem('googleCalendarId') || '6138a69dd5ffb10cb29d68d4be82a6c18487156ec0e10e2d51d752d6eb3fb2ad@group.calendar.google.com';
-  
-  // Date range for Google Calendar
-  const startDate = new Date(2025, 6, 7); // July 7, 2025
-  const endDate = new Date(2025, 7, 18); // August 18, 2025
-  
-  // Google Calendar data
-  const { items: googleItems, loading: googleLoading, error: googleError } = useGoogleCalendar({
-    apiKey: googleApiKey,
-    calendarId: googleCalendarId,
-    startDate,
-    endDate,
-    enabled: !!googleApiKey && !!googleCalendarId
-  });
-
-  useEffect(() => {
-    // Use Google Calendar data if available, otherwise use empty array
-    setItems(googleItems);
-  }, [googleItems]);
-
-  if (googleLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading calendar data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (googleError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-red-600 text-4xl mb-4">⚠️</div>
-          <p className="text-gray-600">Error loading calendar: {googleError}</p>
-        </div>
-      </div>
-    );
-  }
-
-  return <CalendarPDFView items={items} />;
+  return <CalendarPDFView items={staticItems} />;
 };
 
 export default CalendarPDF;
